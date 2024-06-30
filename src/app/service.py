@@ -95,3 +95,31 @@ class AuthService:
         return Token(
             subject=user, issued_at=issued_at, encoded_token=encoded_token
         )
+
+    def authenticate(self, username: str, password: str) -> Token | None:
+        password_hash = self._get_password_hash(password)
+        user = User(username=username, password_hash=password_hash)
+        user_in_db = self.repository.get_user(user)
+        if user_in_db is None:
+            logger.info(f'user {username} not found in db')
+            return None
+        if not self._verify_password(
+            plain_password=password, hashed_password=user_in_db.password_hash
+        ):
+            logger.info(f'user {username} failed password verification')
+            return None
+        token = self.repository.get_token(user_in_db)
+        if token is None:
+            token = self._create_token(user_in_db)
+        else:
+            token = self._update_token(user_in_db)
+        return token
+
+    def _update_token(self, user: User) -> Token:
+        token = self._encode_token(user)
+        token = self.repository.update_token(token)
+        logger.info(f'token for user {user.username} updated in db')
+        return token
+
+    def _verify_password(self, plain_password, hashed_password) -> bool:
+        return self._pwd_context.verify(plain_password, hashed_password)
