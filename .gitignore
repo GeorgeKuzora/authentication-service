@@ -121,3 +121,5 @@ dmypy.json
 
 helm/*/requirements.lock
 helm/*/charts
+
+secrets
