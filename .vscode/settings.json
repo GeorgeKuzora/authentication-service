@@ -3,7 +3,7 @@
         79, 99, 119
     ],
     // https://github.com/romkatv/powerlevel10k?tab=readme-ov-file#fonts
-    "terminal.integrated.fontFamily": "MesloLGS NF",
+    "terminal.integrated.fontFamily": "monospace",
     "workbench.iconTheme": "vscode-icons",
     "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
     "python.terminal.activateEnvironment": true,
