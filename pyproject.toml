@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "workspace"
+name = "authentification-service"
 version = "0.1.0"
 description = ""
-authors = ["Nikita Renjov <n.renjov@cft.ru>"]
+authors = ["Georgiy Kuzora <georgiy@kuzora.ru>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
