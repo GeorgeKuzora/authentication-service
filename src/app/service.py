@@ -1,6 +1,11 @@
 import logging
+import os
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Protocol
+
+import jwt
+from passlib.context import CryptContext
 
 logger = logging.getLogger(__name__)
 
@@ -54,3 +59,11 @@ class Repository(Protocol):
     def update_token(self, token: Token) -> Token:
         """Абстрактный метод обновления токена."""
         ...
+
+
+class AuthService:
+    def __init__(self, repository: Repository) -> None:
+        self.repository = repository
+        self._token_encoding_algorithm = os.environ['TOKEN_ALGORITHM']
+        self._secret_key = os.environ['SECRET_KEY']
+        self._pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
