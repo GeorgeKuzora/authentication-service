@@ -17,3 +17,10 @@ class RepositoryError(Exception):
 class User:
     username: str
     password_hash: str
+
+
+@dataclass
+class Token:
+    subject: User
+    issued_at: datetime
+    encoded_token: str
