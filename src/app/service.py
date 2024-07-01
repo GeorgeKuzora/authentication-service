@@ -21,12 +21,29 @@ class RepositoryError(Exception):
 
 @dataclass
 class User:
+    """
+    Данные о пользователе.
+
+    Attributes:
+        username: str - имя пользователя
+        password_hash: str - хэш пароля пользователя
+    """
+
     username: str
     password_hash: str
 
 
 @dataclass
 class Token:
+    """
+    Данные о токене.
+
+    Attributes:
+        subject: User - пользовать для которого создан токен
+        issued_at: datetime - дата и время создания токена
+        encoded_token: str - кодированное представление токена
+    """
+
     subject: User
     issued_at: datetime
     encoded_token: str
@@ -62,13 +79,45 @@ class Repository(Protocol):
 
 
 class AuthService:
+    """
+    Сервис аутентификации пользователя.
+
+    Сервис позволяет проводить регистрацию и аутентификацию
+    пользоватей. Создает JWT токен.
+
+    Attributes:
+        repository: Repository - хранилище данных.
+        _token_encoding_algotithm: str - алгоритм кодирования токена.
+        _secret_key: str - ключ для кодирования токена.
+        _pwd_context: CryptContext - контекст для хэширования пароля.
+    """
+
     def __init__(self, repository: Repository) -> None:
+        """
+        Функция инициализации.
+
+        Args:
+            repository: Repository - хранилище данных.
+        """
         self.repository = repository
         self._token_encoding_algorithm = os.environ['TOKEN_ALGORITHM']
         self._secret_key = os.environ['SECRET_KEY']
         self._pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
     def register(self, username: str, password: str) -> Token | None:
+        """
+        Регистрирует пользователя и возвращает токен.
+
+        Регистрирует и сохраняет пользователя в базе данных.
+        Создает и возвращает токен для зарегистрированного пользователя.
+
+        Args:
+            username: str - имя пользователя.
+            password: str - пароль пользователя.
+
+        Returns:
+            Token - JWT токен пользователя.
+        """
         password_hash = self._get_password_hash(password)
         user = User(username=username, password_hash=password_hash)
         user = self.repository.create_user(user)
@@ -97,6 +146,22 @@ class AuthService:
         )
 
     def authenticate(self, username: str, password: str) -> Token | None:
+        """
+        Аутентифицирует пользователя и возвращает токен.
+
+        Аутентифицирует пользователя и проверяет наличие токена.
+        Если токена нет создает и возвращает токен пользователя.
+        Если токен есть обновляет и возвращает токен пользователя.
+        Если пользователь не найден либо данные пользователя неверны,
+        возвращает None.
+
+        Args:
+            username: str - имя пользователя.
+            password: str - пароль пользователя.
+
+        Returns:
+            Token | None - JWT токен пользователя.
+        """
         password_hash = self._get_password_hash(password)
         user = User(username=username, password_hash=password_hash)
         user_in_db = self.repository.get_user(user)
