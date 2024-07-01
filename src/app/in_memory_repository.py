@@ -1,4 +1,8 @@
+import logging
 from app.service import User, Token
+
+
+logger = logging.getLogger(__name__)
 
 
 class InMemoryRepository:
