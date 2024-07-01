@@ -46,3 +46,26 @@ class InMemoryRepository:
         self.users_count += 1
         logger.info(f'Добавил пользователя {indexed_user} в хранилище')
         return indexed_user
+
+    def create_token(self, token: Token) -> Token:
+        """
+        Создает токен в базе данных.
+
+        Создает, сохраняет в базе данных
+        и возвращает индексированную запись о токене пользователя.
+
+        Args:
+            token: Token - неидексированная запись о токене пользователя.
+
+        Returns:
+            Token - индексированная запись о токене пользователя.
+        """
+        indexed_token = Token(
+            subject=token.subject,
+            issued_at=token.issued_at,
+            encoded_token=token.encoded_token,
+            token_id=self.tokens_count
+        )
+        self.tokens_count += 1
+        logger.info(f'Добавил токен {indexed_token} в хранилище')
+        return indexed_token
