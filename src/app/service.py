@@ -48,6 +48,7 @@ class Token:
     subject: User
     issued_at: datetime
     encoded_token: str
+    token_id: int | None = None
 
 
 class Repository(Protocol):
