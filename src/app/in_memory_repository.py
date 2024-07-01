@@ -80,12 +80,17 @@ class InMemoryRepository:
             user: User - данные пользователя.
 
         Returns:
-            User - запись о пользователе в базе данных.
+            User | None - запись о пользователе в базе данных.
         """
-        in_db_user, *_ = [
-            member for member in self.users if (
-                member.username == user.username
-            )
-        ]
+        try:
+            in_db_user, *_ = [
+                member for member in self.users if (
+                    member.username == user.username
+                )
+            ]
+        except ValueError:
+            logger.info(f'Пользователь {user} не найден в хранилище')
+            return None
+
         logger.info(f'Получил пользователя {in_db_user} из хранилища')
         return in_db_user
