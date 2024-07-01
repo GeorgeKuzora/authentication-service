@@ -94,3 +94,28 @@ class InMemoryRepository:
 
         logger.info(f'Получил пользователя {in_db_user} из хранилища')
         return in_db_user
+
+    def get_token(self, user: User) -> Token | None:
+        """
+        Получает токен пользователя из базы данных.
+
+        Получает и возвращает запись о токене пользователя из базы данных.
+
+        Args:
+            user: User - данные пользователя.
+
+        Returns:
+            Token | None - запись о токене пользователя в базе данных.
+        """
+        try:
+            token, *_ = [
+                member for member in self.tokens if (
+                    member.subject.user_id == user.user_id
+                )
+            ]
+        except ValueError:
+            logger.info(f'Токен для пользователя {user} не найден')
+            return None
+
+        logger.info(f'Получил токен {token} из хранилища')
+        return token
