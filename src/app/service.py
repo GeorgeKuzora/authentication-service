@@ -31,6 +31,7 @@ class User:
 
     username: str
     password_hash: str
+    user_id: int | None = None
 
 
 @dataclass
