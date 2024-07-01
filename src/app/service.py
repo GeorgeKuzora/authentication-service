@@ -2,13 +2,16 @@ import logging
 import os
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Protocol
+from typing import Dict, Protocol
 
+import dotenv
 import jwt
 from passlib.context import CryptContext
 
 logger = logging.getLogger(__name__)
 
+jwt_secrets_path = "/run/secrets/jwt_secrets"
+jwt_config: Dict[str, str | None] = dotenv.dotenv_values(jwt_secrets_path)
 
 class RepositoryError(Exception):
     """
@@ -102,8 +105,8 @@ class AuthService:
             repository: Repository - хранилище данных.
         """
         self.repository = repository
-        self._token_encoding_algorithm = os.environ['TOKEN_ALGORITHM']
-        self._secret_key = os.environ['SECRET_KEY']
+        self._token_encoding_algorithm = jwt_config['TOKEN_ALGORITHM']
+        self._secret_key = jwt_config['SECRET_KEY']
         self._pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
     def register(self, username: str, password: str) -> Token | None:
