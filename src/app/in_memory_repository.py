@@ -69,3 +69,23 @@ class InMemoryRepository:
         self.tokens_count += 1
         logger.info(f'Добавил токен {indexed_token} в хранилище')
         return indexed_token
+
+    def get_user(self, user: User) -> User | None:
+        """
+        Получает пользователя из базы данных.
+
+        Получает и возвращает запись о пользователе из базы данных.
+
+        Args:
+            user: User - данные пользователя.
+
+        Returns:
+            User - запись о пользователе в базе данных.
+        """
+        in_db_user, *_ = [
+            member for member in self.users if (
+                member.username == user.username
+            )
+        ]
+        logger.info(f'Получил пользователя {in_db_user} из хранилища')
+        return in_db_user
