@@ -102,7 +102,7 @@ class AuthService:
         self.repository = repository
         self._token_encoding_algorithm = os.environ['TOKEN_ALGORITHM']
         self._secret_key = os.environ['SECRET_KEY']
-        self._pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        self._pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
     def register(self, username: str, password: str) -> Token | None:
         """
@@ -122,8 +122,7 @@ class AuthService:
         user = User(username=username, password_hash=password_hash)
         user = self.repository.create_user(user)
         logger.info(f'user {username} created in db')
-        token = self._create_token(user)
-        return token
+        return self._create_token(user)
 
     def _get_password_hash(self, password) -> str:
         return self._pwd_context.hash(password)
@@ -139,10 +138,10 @@ class AuthService:
         encoded_token: str = jwt.encode(
             payload={'sub': user.username, 'iat': issued_at},
             key=self._secret_key,
-            algorithm=self._token_encoding_algorithm
+            algorithm=self._token_encoding_algorithm,
         )
         return Token(
-            subject=user, issued_at=issued_at, encoded_token=encoded_token
+            subject=user, issued_at=issued_at, encoded_token=encoded_token,
         )
 
     def authenticate(self, username: str, password: str) -> Token | None:
@@ -164,12 +163,12 @@ class AuthService:
         """
         password_hash = self._get_password_hash(password)
         user = User(username=username, password_hash=password_hash)
-        user_in_db = self.repository.get_user(user)
+        user_in_db: User | None = self.repository.get_user(user)
         if user_in_db is None:
             logger.info(f'user {username} not found in db')
             return None
-        if not self._verify_password(
-            plain_password=password, hashed_password=user_in_db.password_hash
+        elif not self._verify_password(
+            plain_password=password, hashed_password=user_in_db.password_hash,
         ):
             logger.info(f'user {username} failed password verification')
             return None
