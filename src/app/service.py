@@ -195,7 +195,8 @@ class AuthService:
         """
         password_hash = self._get_password_hash(password)
         user = User(username=username, password_hash=password_hash)
-        user_in_db: User | None = self.repository.get_user(user)
+        user_in_db = self._get_user(user)
+
         if user_in_db is None:
             logger.info(f'user {username} not found in db')
             return None
@@ -205,12 +206,24 @@ class AuthService:
             logger.info(f'user {username} failed password verification')
             return None
         token = self.repository.get_token(user_in_db)
+
         if token is None:
             token = self._create_token(user_in_db)
         else:
             token = self._update_token(user_in_db)
         return token
 
+    def _get_user(self, user: User) -> User | None:
+        try:
+            user_in_db: User | None = self.repository.get_user(user)
+        except RepositoryError as err:
+            logger.error(
+                f"RepositoryError: can't get a {user}",
+            )
+            raise RepositoryError(
+                f"RepositoryError: can't get a {user}",
+            ) from err
+        return user_in_db
     def _update_token(self, user: User) -> Token:
         token = self._encode_token(user)
         token = self.repository.update_token(token)
