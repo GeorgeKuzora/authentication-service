@@ -213,6 +213,9 @@ class AuthService:
             token = self._update_token(user_in_db)
         return token
 
+    def _verify_password(self, plain_password, hashed_password) -> bool:
+        return self._pwd_context.verify(plain_password, hashed_password)
+
     def _get_user(self, user: User) -> User | None:
         try:
             user_in_db: User | None = self.repository.get_user(user)
@@ -252,6 +255,3 @@ class AuthService:
 
         logger.info(f'token for user {user.username} updated in db')
         return token
-
-    def _verify_password(self, plain_password, hashed_password) -> bool:
-        return self._pwd_context.verify(plain_password, hashed_password)
