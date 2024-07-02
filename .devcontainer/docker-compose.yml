@@ -21,4 +21,4 @@ services:
       - jwt_secrets
 secrets:
   jwt_secrets:
-    file: ./secrets
+    file: ./app/secrets
