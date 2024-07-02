@@ -1,6 +1,7 @@
 import logging
 import time
 
+from app.config import get_auth_config
 from app.in_memory_repository import InMemoryRepository
 from app.service import AuthService
 
@@ -10,7 +11,8 @@ logger = logging.getLogger(__name__)
 def main() -> None:
     """Устанавливает точку входа в программу."""
     repository = InMemoryRepository()
-    service = AuthService(repository)
+    config = get_auth_config()
+    service = AuthService(repository, config)
 
     logger.info('user registration\n')
     token = service.register(
