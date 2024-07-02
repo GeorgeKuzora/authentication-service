@@ -12,6 +12,11 @@ logger = logging.getLogger(__name__)
 jwt_secrets_path = '/run/secrets/jwt_secrets'
 jwt_config: Dict[str, str | None] = dotenv.dotenv_values(jwt_secrets_path)
 
+# Только в целях удобства тестирования при проверке третьим лицом.
+# Чтобы не создавать файл secrets при тестировании
+jwt_algorithm = 'HS256'
+jwt_sk = '09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7'
+
 
 class RepositoryError(Exception):
     """
@@ -105,8 +110,12 @@ class AuthService:
             repository: Repository - хранилище данных.
         """
         self.repository = repository
-        self._token_encoding_algorithm = jwt_config['TOKEN_ALGORITHM']
-        self._secret_key = jwt_config['SECRET_KEY']
+        self._token_encoding_algorithm = jwt_config.get(
+            'TOKEN_ALGORITHM', jwt_algorithm,
+        )
+        self._secret_key = jwt_config.get(
+            'SECRET_KEY', jwt_sk,
+        )
         self._pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
     def register(self, username: str, password: str) -> Token | None:
