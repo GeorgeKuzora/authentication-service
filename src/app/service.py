@@ -134,12 +134,22 @@ class AuthService:
         """
         password_hash = self._get_password_hash(password)
         user = User(username=username, password_hash=password_hash)
-        user = self.repository.create_user(user)
-        logger.info(f'user {username} created in db')
+        user = self._create_user(user)
         return self._create_token(user)
 
     def _get_password_hash(self, password) -> str:
         return self._pwd_context.hash(password)
+
+    def _create_user(self, user: User) -> User:
+        try:
+            user_in_db = self.repository.create_user(user)
+        except RepositoryError as err:
+            logger.error(f'repository error during user creation {user}')
+            raise RepositoryError(
+                f'repository error during user creation {user}',
+            ) from err
+        logger.info(f'user {user_in_db} created in db')
+        return user_in_db
 
     def _create_token(self, user: User) -> Token:
         token = self._encode_token(user)
