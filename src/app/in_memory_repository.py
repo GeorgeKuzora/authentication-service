@@ -135,18 +135,12 @@ class InMemoryRepository:
         Returns:
             Token | None - запись о токене пользователя в базе данных.
         """
-        try:
-            in_db_token, *_ = [
-                member for member in self.tokens if (
-                    member.subject.user_id == token.subject.user_id
-                )
-            ]
-        except ValueError:
-            logger.info(f'Токен для пользователя {token.subject} не найден')
-            return self.create_token(token)
+        token_in_db = self.get_token(token.subject)
+        if token_in_db is None:
+            token_in_db = self.create_token(token)
 
-        token_position = self.tokens.index(in_db_token)
-        token.token_id = in_db_token.token_id
+        token_position = self.tokens.index(token_in_db)
+        token.token_id = token_in_db.token_id
         self.tokens[token_position] = token
         logger.info(f'Обновил токен {token} в хранилище')
         return token
