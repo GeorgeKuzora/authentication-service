@@ -43,6 +43,7 @@ class InMemoryRepository:
             password_hash=user.password_hash,
             user_id=self.users_count,
         )
+        self.users.append(indexed_user)
         self.users_count += 1
         logger.info(f'Добавил пользователя {indexed_user} в хранилище')
         return indexed_user
@@ -66,6 +67,7 @@ class InMemoryRepository:
             encoded_token=token.encoded_token,
             token_id=self.tokens_count
         )
+        self.tokens.append(indexed_token)
         self.tokens_count += 1
         logger.info(f'Добавил токен {indexed_token} в хранилище')
         return indexed_token
