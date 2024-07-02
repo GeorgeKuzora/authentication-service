@@ -46,7 +46,7 @@ class InMemoryRepository:
         )
         self.users.append(indexed_user)
         self.users_count += 1
-        logger.info(f'Добавил пользователя {indexed_user} в хранилище')
+        logger.info(f'Created user {indexed_user}')
         return indexed_user
 
     def create_token(self, token: Token) -> Token:
@@ -70,7 +70,7 @@ class InMemoryRepository:
         )
         self.tokens.append(indexed_token)
         self.tokens_count += 1
-        logger.info(f'Добавил токен {indexed_token} в хранилище')
+        logger.info(f'Created token {indexed_token}')
         return indexed_token
 
     def get_user(self, user: User) -> User | None:
@@ -92,10 +92,10 @@ class InMemoryRepository:
                 )
             ]
         except ValueError:
-            logger.info(f'Пользователь {user} не найден в хранилище')
+            logger.warning(f'{user} is not found')
             return None
 
-        logger.info(f'Получил пользователя {in_db_user} из хранилища')
+        logger.info(f'got {in_db_user}')
         return in_db_user
 
     def get_token(self, user: User) -> Token | None:
@@ -117,10 +117,10 @@ class InMemoryRepository:
                 )
             ]
         except ValueError:
-            logger.info(f'Токен для пользователя {user} не найден')
+            logger.warning(f'token for {user} is not found')
             return None
 
-        logger.info(f'Получил токен {token} из хранилища')
+        logger.info(f'got {token}')
         return token
 
     def update_token(self, token: Token) -> Token:
@@ -142,5 +142,5 @@ class InMemoryRepository:
         token_position = self.tokens.index(token_in_db)
         token.token_id = token_in_db.token_id
         self.tokens[token_position] = token
-        logger.info(f'Обновил токен {token} в хранилище')
+        logger.info(f'Updated {token}')
         return token
