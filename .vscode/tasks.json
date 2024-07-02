@@ -11,6 +11,11 @@
             "label": "ISort",
             "type": "shell",
             "command": "poetry run isort src/app",
+        },
+        {
+            "label": "Mypy",
+            "type": "shell",
+            "command": "poetry run mypy src/app",
         }
     ]
 }
