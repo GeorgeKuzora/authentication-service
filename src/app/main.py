@@ -20,7 +20,7 @@ def main() -> None:
 
     time.sleep(3)
 
-    logger.info('failed user authentification\n')
+    logger.info('failed user authentication\n')
     token = service.authenticate(
         username='jonny', password='password2',
     )
@@ -36,7 +36,7 @@ def main() -> None:
 
     time.sleep(3)
 
-    logger.info('user authentification\n')
+    logger.info('user authentication\n')
     token = service.authenticate(
         username='jonny', password='password1',
     )
