@@ -20,6 +20,7 @@ class InMemoryRepository:
     """
 
     def __init__(self) -> None:
+        """Метод инициализации."""
         self.users: list[User] = []
         self.users_count: int = 0
         self.tokens: list[Token] = []
