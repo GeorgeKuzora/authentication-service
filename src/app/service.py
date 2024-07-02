@@ -131,6 +131,9 @@ class AuthService:
 
         Returns:
             Token - JWT токен пользователя.
+
+        Raises:
+            RepositoryError - в случае ошибки доступа к хранилищу данных.
         """
         password_hash = self._get_password_hash(password)
         user = User(username=username, password_hash=password_hash)
@@ -192,6 +195,9 @@ class AuthService:
 
         Returns:
             Token | None - JWT токен пользователя.
+
+        Raises:
+            RepositoryError - в случае ошибки доступа к хранилищу данных.
         """
         password_hash = self._get_password_hash(password)
         user = User(username=username, password_hash=password_hash)
