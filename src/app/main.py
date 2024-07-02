@@ -12,35 +12,35 @@ def main() -> None:
     repository = InMemoryRepository()
     service = AuthService(repository)
 
-    logger.info('Регистрация пользователя\n')
+    logger.info('user registration\n')
     token = service.register(
         username='jonny', password='password1',
     )
-    logger.info(f'Создан токен {token}')
+    logger.info(f'created {token}')
 
     time.sleep(3)
 
-    logger.info('Провальная аутентификация пользователя\n')
+    logger.info('failed user authentification\n')
     token = service.authenticate(
         username='jonny', password='password2',
     )
-    logger.info(f'Создан токен {token}')
+    logger.info(f'created {token}')
 
     time.sleep(3)
 
-    logger.info('Пользователь не найден\n')
+    logger.info('user not found\n')
     token = service.authenticate(
         username='peter', password='password1',
     )
-    logger.info(f'Создан токен {token}')
+    logger.info(f'created {token}')
 
     time.sleep(3)
 
-    logger.info('Аутентификация пользователя\n')
+    logger.info('user authentification\n')
     token = service.authenticate(
         username='jonny', password='password1',
     )
-    logger.info(f'Создан токен {token}')
+    logger.info(f'created {token}')
 
 
 if __name__ == '__main__':
