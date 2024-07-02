@@ -1,4 +1,4 @@
-from app.main import get_greetings
+from app.main import main
 
 def test_greetings():
-    get_greetings()
+    main()
