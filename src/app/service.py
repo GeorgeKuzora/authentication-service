@@ -153,8 +153,16 @@ class AuthService:
 
     def _create_token(self, user: User) -> Token:
         token = self._encode_token(user)
-        token = self.repository.create_token(token)
-        logger.info(f'token for user {user.username} created in db')
+        try:
+            token = self.repository.create_token(token)
+        except RepositoryError as err:
+            logger.error(
+                f'repository error during token creation for a {user}',
+            )
+            raise RepositoryError(
+                f'repository error during token creation for a {user}',
+            ) from err
+        logger.info(f'token {token} for user {user.username} created in db')
         return token
 
     def _encode_token(self, user: User) -> Token:
