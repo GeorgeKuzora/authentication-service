@@ -239,7 +239,17 @@ class AuthService:
 
     def _update_token(self, user: User) -> Token:
         token = self._encode_token(user)
-        token = self.repository.update_token(token)
+
+        try:
+            token = self.repository.update_token(token)
+        except RepositoryError as err:
+            logger.error(
+                f"RepositoryError: can't update token for a {user}",
+            )
+            raise RepositoryError(
+                f"RepositoryError: can't update token for a {user}",
+            ) from err
+
         logger.info(f'token for user {user.username} updated in db')
         return token
 
