@@ -1,5 +1,4 @@
 import logging
-import os
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, Protocol
@@ -10,8 +9,9 @@ from passlib.context import CryptContext
 
 logger = logging.getLogger(__name__)
 
-jwt_secrets_path = "/run/secrets/jwt_secrets"
+jwt_secrets_path = '/run/secrets/jwt_secrets'
 jwt_config: Dict[str, str | None] = dotenv.dotenv_values(jwt_secrets_path)
+
 
 class RepositoryError(Exception):
     """

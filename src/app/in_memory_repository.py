@@ -1,6 +1,6 @@
 import logging
-from app.service import User, Token
 
+from app.service import Token, User
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ class InMemoryRepository:
             subject=token.subject,
             issued_at=token.issued_at,
             encoded_token=token.encoded_token,
-            token_id=self.tokens_count
+            token_id=self.tokens_count,
         )
         self.tokens.append(indexed_token)
         self.tokens_count += 1
