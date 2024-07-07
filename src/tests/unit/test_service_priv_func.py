@@ -152,3 +152,54 @@ class TestGetUser:
 
         with pytest.raises(RepositoryError):
             service._get_user(user)  # noqa
+
+
+class TestGetToken:
+    """Тестирует метод _get_token."""
+
+    @pytest.mark.parametrize(
+        'user, expected_token', (
+            pytest.param(
+                user_list[0], token_list[0], id='user 1',
+            ),
+            pytest.param(
+                user_list[1], token_list[1], id='user 2',
+            ),
+            pytest.param(
+                user_list[1], None, id='token not found',
+            ),
+        ),
+    )
+    def test_get_token(
+        self, user: User, expected_token: Token, service: AuthService,
+    ):
+        """Тестирует позитивные сценарии."""
+        service.repository.get_token.return_value = expected_token
+
+        response = service._get_token(user)  # noqa
+
+        assert isinstance(response, type(expected_token))
+        if response is not None:
+            assert response.subject.username == expected_token.subject.username
+            assert response.subject.user_id == expected_token.subject.user_id
+            assert response.subject.password_hash == expected_token.subject.password_hash  # noqa
+            assert response.issued_at == expected_token.issued_at
+            assert response.encoded_token == expected_token.encoded_token
+
+    @pytest.mark.parametrize(
+        'user, side_effect', (
+            pytest.param(
+                user_list[1],
+                raise_repository_error,
+                id='error in repository',
+            ),
+        ),
+    )
+    def test_get_token_raises(
+        self, user: User, side_effect, service: AuthService,
+    ):
+        """Тестирует негативный сценарий."""
+        service.repository.get_token.side_effect = side_effect
+
+        with pytest.raises(RepositoryError):
+            service._get_token(user)  # noqa
