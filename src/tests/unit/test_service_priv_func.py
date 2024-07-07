@@ -92,3 +92,16 @@ class TestCreateToken:
 
         with pytest.raises(RepositoryError):
             service._create_token(user)  # noqa
+
+
+class TestHashVerifyPassword:
+    """Тестирует хэширование и верификацию пароля."""
+
+    def test_hash_verify_password(self, service: AuthService):
+        """Тестирует хэширование и верификацию пароля."""
+        plain_password = 'plain-password'
+        password_hash = service._get_password_hash(plain_password)  # noqa
+
+        verified = service._verify_password(plain_password, password_hash)  # noqa
+
+        assert verified
