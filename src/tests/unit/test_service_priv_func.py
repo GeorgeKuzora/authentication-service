@@ -105,3 +105,50 @@ class TestHashVerifyPassword:
         verified = service._verify_password(plain_password, password_hash)  # noqa
 
         assert verified
+
+
+class TestGetUser:
+    """Тестирует метод _get_user."""
+
+    @pytest.mark.parametrize(
+        'user, expected', (
+            pytest.param(
+                user_list[0], user_list[0], id='user 1',
+            ),
+            pytest.param(
+                user_list[1], user_list[1], id='user 2',
+            ),
+            pytest.param(
+                user_list[1], None, id='user not found',
+            ),
+        ),
+    )
+    def test_get_user(self, user: User, expected: User, service: AuthService):
+        """Тестирует позитивные сценарии."""
+        service.repository.get_user.return_value = expected
+
+        response = service._get_user(user)  # noqa
+
+        assert isinstance(response, type(expected))
+        if response is not None:
+            assert response.username == expected.username
+            assert response.user_id == expected.user_id
+            assert response.password_hash == expected.password_hash
+
+    @pytest.mark.parametrize(
+        'user, side_effect', (
+            pytest.param(
+                user_list[1],
+                raise_repository_error,
+                id='error in repository',
+            ),
+        ),
+    )
+    def test_get_user_raises(
+        self, user: User, side_effect, service: AuthService,
+    ):
+        """Тестирует негативный сценарий."""
+        service.repository.get_user.side_effect = side_effect
+
+        with pytest.raises(RepositoryError):
+            service._get_user(user)  # noqa
