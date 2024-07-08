@@ -15,3 +15,9 @@ def service():
     config = get_auth_config()
     repository = InMemoryRepository()
     return AuthService(repository=repository, config=config)
+
+
+usenames_and_passwords = [
+    {'username': 'george', 'password': 'password_1'},
+    {'username': 'peter', 'password': 'password_2'},
+]
