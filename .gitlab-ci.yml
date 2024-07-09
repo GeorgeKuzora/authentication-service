@@ -80,4 +80,4 @@ pytest-test-job:
         - '**/*'
       when: manual
   script:
-    - poetry run pytest --cov $SOURCE_CODE_DIR
+    - poetry run pytest --disable-warnings --cov=$APP_CODE_DIR --cov-fail-under=90 $SOURCE_CODE_DIR
