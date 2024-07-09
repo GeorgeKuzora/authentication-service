@@ -21,7 +21,7 @@ default:
     - export POETRY_NO_INTERACTION=1
     - export POETRY_VERSION=$POETRY_VERSION
     - export POETRY_HOME="/root/.local/poetry"
-    - export SECRETS_PATH="src/.devcontainer/app/secrets"
+    - export SECRETS_PATH="./.devcontainer/app/secrets"
     - export PATH="$POETRY_HOME/bin:$PATH"
     - export PATH="/root/.local/bin:$PATH"
     - pwd
