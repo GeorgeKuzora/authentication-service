@@ -24,6 +24,7 @@ default:
     - export SECRETS_PATH="src/.devcontainer/app/secrets"
     - export PATH="$POETRY_HOME/bin:$PATH"
     - export PATH="/root/.local/bin:$PATH"
+    - pwd
     - apt-get update
     - apt-get install --no-install-recommends -y pipx
     - pipx install poetry==$POETRY_VERSION
