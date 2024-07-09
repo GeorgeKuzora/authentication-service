@@ -1,9 +1,9 @@
 import logging
 import time
 
-from app.config import get_auth_config
-from app.in_memory_repository import InMemoryRepository
-from app.service import AuthService
+from app.config import get_auth_config  # type: ignore
+from app.in_memory_repository import InMemoryRepository  # type: ignore
+from app.service import AuthService  # type: ignore
 
 logger = logging.getLogger(__name__)
 

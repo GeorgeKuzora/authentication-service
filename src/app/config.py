@@ -4,7 +4,7 @@ from pathlib import Path
 
 import dotenv
 
-from app.service import Config
+from app.service import Config  # type: ignore
 
 logger = logging.getLogger(__name__)
 
