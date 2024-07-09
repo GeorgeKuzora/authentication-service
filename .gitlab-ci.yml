@@ -42,4 +42,4 @@ mypy-lint-job:
 pytest-test-job:
   stage: test
   script:
-    - pytest --cov src
+    - poetry run pytest --cov src
