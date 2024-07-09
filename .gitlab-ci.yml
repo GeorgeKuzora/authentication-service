@@ -67,6 +67,9 @@ pytest-test-job:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - $SOURCE_CODE_DIR'/**/*'
+    - if: $CI_PIPELINE_SOURCE == "push"
+      changes:
+        - '**/*'
       when: manual
   script:
     - poetry run pytest --cov $SOURCE_CODE_DIR
