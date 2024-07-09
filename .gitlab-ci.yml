@@ -1,0 +1,42 @@
+stages:
+  - lint
+  - test
+
+variables:
+  POETRY_VERSION: 1.8.3
+  PYTHON_VERSION: 3.12.4
+
+default:
+  interruptible: false
+  image: python:3.12.4-slim
+  before_script:
+    - export PIP_NO_CACHE_DIR=off
+    - export PIP_DISABLE_PIP_VERSION_CHECK=on
+    - export PIP_DEFAULT_TIMEOUT=100
+    - export PYTHONUNBUFFERED=1
+    - export PYTHONDONTWRITEBYTECODE=1
+    - export PYTHONFAULTHANDLER=1
+    - export POETRY_VIRTUALENVS_IN_PROJECT=false
+    - export POETRY_NO_INTERACTION=1
+    - export POETRY_VERSION=$POETRY_VERSION
+    - export PYTHONPATH=src
+    - export SECRETS_PATH="src/.devcontainer/app/secrets"
+    - apt-get update
+    - apt-get install --no-install-recommends -y pipx
+    - pipx install poetry==$POETRY_VERSION
+    - poetry install --all-extras --compile --no-root
+
+flake8-lint-job:
+  stage: lint
+  script:
+    - "poetry run flake8 --jobs=1 src"
+
+mypy-lint-job:
+  stage: lint
+  script:
+    - "poetry run mypy src/app"
+
+pytest-test-job:
+  stage: test
+  script:
+    - pytest --cov src
