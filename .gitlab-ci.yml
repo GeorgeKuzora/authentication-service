@@ -43,6 +43,9 @@ flake8-lint-job:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - $SOURCE_CODE_DIR'/**/*'
+    - if: $CI_PIPELINE_SOURCE == "push"
+      changes:
+        - '**/*'
       when: manual
   script:
     - poetry run flake8 --jobs=1 $SOURCE_CODE_DIR
@@ -56,6 +59,9 @@ mypy-lint-job:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - $APP_CODE_DIR'/**/*'
+    - if: $CI_PIPELINE_SOURCE == "push"
+      changes:
+        - '**/*'
       when: manual
   script:
     - poetry run mypy $APP_CODE_DIR
