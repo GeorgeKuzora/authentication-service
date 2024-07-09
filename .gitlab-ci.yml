@@ -10,11 +10,6 @@ variables:
   TEST_CODE_DIR: 'src/tests'
   SECRETS_PATH: './.devcontainer/app/secrets'
 
-.default_rules:
-  - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    changes:
-      - '**/*'
-
 default:
   image: python:3.12.4-slim-bookworm
   before_script:
@@ -40,7 +35,9 @@ default:
 flake8-lint-job:
   stage: lint
   rules:
-    - !reference [.default_rules, rules]
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - '**/*'
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - $SOURCE_CODE_DIR'/**/*'
@@ -51,7 +48,9 @@ flake8-lint-job:
 mypy-lint-job:
   stage: lint
   rules:
-    - !reference [.default_rules, rules]
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - '**/*'
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - $APP_CODE_DIR'/**/*'
@@ -62,7 +61,9 @@ mypy-lint-job:
 pytest-test-job:
   stage: test
   rules:
-    - !reference [.default_rules, rules]
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - '**/*'
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - $SOURCE_CODE_DIR'/**/*'
