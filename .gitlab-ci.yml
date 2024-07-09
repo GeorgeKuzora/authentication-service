@@ -7,8 +7,7 @@ variables:
   PYTHON_VERSION: 3.12.4
 
 default:
-  interruptible: false
-  image: python:3.12.4-slim
+  image: python:3.12.4-slim-bookworm
   before_script:
     - export PIP_NO_CACHE_DIR=off
     - export PIP_DISABLE_PIP_VERSION_CHECK=on
