@@ -13,7 +13,9 @@ variables:
 default:
   image: python:3.12.4-slim-bookworm
   before_script:
-    - export PIP_NO_CACHE_DIR=off - export PIP_DISABLE_PIP_VERSION_CHECK=on - export PIP_DEFAULT_TIMEOUT=100
+    - export PIP_NO_CACHE_DIR=off
+    - export PIP_DISABLE_PIP_VERSION_CHECK=on
+    - export PIP_DEFAULT_TIMEOUT=100
     - export PYTHONUNBUFFERED=1
     - export PYTHONDONTWRITEBYTECODE=1
     - export PYTHONFAULTHANDLER=1
