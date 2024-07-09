@@ -1,4 +1,5 @@
 import logging
+import os
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -31,7 +32,7 @@ class AuthConfigAccessData:
 
     algorithm_key: str = 'TOKEN_ALGORITHM'
     secret_key_key: str = 'SECRET_KEY'
-    jwt_secrets_path: str = '/run/secrets/jwt_secrets'
+    jwt_secrets_path: str | None = os.environ.get('SECRETS_PATH')
 
 
 def _is_valid_path(path: str) -> bool:
@@ -53,6 +54,14 @@ def get_auth_config() -> Config:
         ConfigError - в случае если конфигурация не найдена.
     """
     access_data = AuthConfigAccessData()
+
+    if access_data.jwt_secrets_path is None:
+        logger.critical(
+            'config file path not found. Set SECRETS_PATH=',
+        )
+        raise ConfigError(
+            'config file path not found',
+        )
 
     if not _is_valid_path(access_data.jwt_secrets_path):
         logger.critical(
