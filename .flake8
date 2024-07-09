@@ -22,4 +22,5 @@ ignore =
     S101,
     WPS218,
     WPS402,
-    WPS430
+    WPS430,
+    WPS238
