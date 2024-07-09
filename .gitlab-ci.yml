@@ -58,7 +58,7 @@ mypy-lint-job:
         - '**/*'
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
-        - $APP_CODE_DIR'/**/*'
+        - $APP_CODE_DIR/**/*
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - '**/*'
@@ -74,7 +74,7 @@ pytest-test-job:
         - '**/*'
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
-        - $SOURCE_CODE_DIR'/**/*'
+        - $SOURCE_CODE_DIR/**/*
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - '**/*'
