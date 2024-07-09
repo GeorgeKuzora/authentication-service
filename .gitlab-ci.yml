@@ -3,8 +3,9 @@ stages:
   - test
 
 variables:
-  POETRY_VERSION: 1.8.3
   PYTHON_VERSION: 3.12.4
+  POETRY_VERSION: 1.8.3
+
 
 default:
   image: python:3.12.4-slim-bookworm
@@ -15,11 +16,13 @@ default:
     - export PYTHONUNBUFFERED=1
     - export PYTHONDONTWRITEBYTECODE=1
     - export PYTHONFAULTHANDLER=1
+    - export PYTHONPATH=src
     - export POETRY_VIRTUALENVS_IN_PROJECT=false
     - export POETRY_NO_INTERACTION=1
     - export POETRY_VERSION=$POETRY_VERSION
-    - export PYTHONPATH=src
+    - export POETRY_HOME="/root/.local/poetry"
     - export SECRETS_PATH="src/.devcontainer/app/secrets"
+    - export PATH="$POETRY_HOME/bin:$PATH"
     - apt-get update
     - apt-get install --no-install-recommends -y pipx
     - pipx install poetry==$POETRY_VERSION
