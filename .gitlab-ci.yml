@@ -35,6 +35,7 @@ default:
     - poetry install --all-extras --compile --no-root
 
 flake8-lint-job:
+  interruptible: true
   stage: lint
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -51,6 +52,7 @@ flake8-lint-job:
     - poetry run flake8 --jobs=1 $SOURCE_CODE_DIR
 
 mypy-lint-job:
+  interruptible: true
   stage: lint
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -67,6 +69,7 @@ mypy-lint-job:
     - poetry run mypy $APP_CODE_DIR
 
 pytest-test-job:
+  interruptible: true
   stage: test
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
