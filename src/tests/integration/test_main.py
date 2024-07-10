@@ -1,5 +1,5 @@
 from app.main import main
 
 
-def test_greetings():
+def test_main():
     main()
