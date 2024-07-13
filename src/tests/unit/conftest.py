@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from app.in_memory_repository import InMemoryRepository
 from app.service import AuthService, RepositoryError, Token, User
 
 issued_at = datetime.now()
@@ -15,6 +16,8 @@ token_list = [
     Token(user_list[0], issued_at, encoded_token, 1),
     Token(user_list[1], issued_at, encoded_token, 2),
 ]
+invalid_user = User('invalid', 'invalid')
+invalid_token = Token(invalid_user, datetime.now(), 'sdfa')
 
 
 @pytest.fixture
@@ -32,6 +35,46 @@ def service():
     return AuthService(repository=repository, config=config)
 
 
+@pytest.fixture
+def repository():
+    """Фикстура для создания объекта InMemoryRepository."""
+    return InMemoryRepository()
+
+
 def raise_repository_error(*args, **kwargs):
     """Функция для вызова RepositoryError."""
     raise RepositoryError
+
+
+@pytest.fixture
+def single_user_in_repo_facrory(repository):  # noqa
+    """Фикстура репозитория с одной записью о пользователе."""
+    users_in_repo = 1
+    repository.create_user(user_list[0])
+    return repository, users_in_repo
+
+
+@pytest.fixture
+def two_users_in_repo_facrory(repository):  # noqa
+    """Фикстура репозитория с двумя записями о пользователях."""
+    users_in_repo = 2
+    for user_id in range(users_in_repo):
+        repository.create_user(user_list[user_id])
+    return repository, users_in_repo
+
+
+@pytest.fixture
+def single_token_in_repo_facrory(repository):  # noqa
+    """Фикстура репозитория с одной записью о токене."""
+    tokens_in_repo = 1
+    repository.create_token(token_list[0])
+    return repository, tokens_in_repo
+
+
+@pytest.fixture
+def two_tokens_in_repo_facrory(repository):  # noqa
+    """Фикстура репозитория с двумя записями о токенах."""
+    tokens_in_repo = 2
+    for token_id in range(tokens_in_repo):
+        repository.create_token(token_list[token_id])
+    return repository, tokens_in_repo
