@@ -16,6 +16,8 @@ wemake-python-styleguide = "^0.19.2"
 pytest = "^8.2.2"
 mypy = "^1.10.1"
 types-passlib = "*"
+coverage = "*"
+pytest-cov = "*"
 
 [build-system]
 requires = ["poetry-core"]

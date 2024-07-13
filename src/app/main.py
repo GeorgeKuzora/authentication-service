@@ -1,5 +1,4 @@
 import logging
-import time
 
 from app.config import get_auth_config
 from app.in_memory_repository import InMemoryRepository
@@ -20,23 +19,17 @@ def main() -> None:
     )
     logger.info(f'created {token}')
 
-    time.sleep(3)
-
     logger.info('failed user authentication\n')
     token = service.authenticate(
         username='jonny', password='password2',
     )
     logger.info(f'created {token}')
 
-    time.sleep(3)
-
     logger.info('user not found\n')
     token = service.authenticate(
         username='peter', password='password1',
     )
     logger.info(f'created {token}')
-
-    time.sleep(3)
 
     logger.info('user authentication\n')
     token = service.authenticate(
