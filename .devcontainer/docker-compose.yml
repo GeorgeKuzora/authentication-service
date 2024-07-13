@@ -17,6 +17,7 @@ services:
       - seccomp:unconfined
     environment:
       - PYTHONPATH=/workspace/src
+      - SECRETS_PATH=/run/secrets/jwt_secrets
     secrets:
       - jwt_secrets
 secrets:

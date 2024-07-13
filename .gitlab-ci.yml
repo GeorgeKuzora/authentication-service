@@ -1,0 +1,86 @@
+stages:
+  - lint
+  - test
+
+variables:
+  PYTHON_VERSION: 3.12.4
+  POETRY_VERSION: 1.8.3
+  SOURCE_CODE_DIR: 'src'
+  APP_CODE_DIR: 'src/app'
+  TEST_CODE_DIR: 'src/tests'
+  SECRETS_PATH: './.devcontainer/app/secrets'
+
+default:
+  image: python:3.12.4-slim-bookworm
+  before_script:
+    - export PIP_NO_CACHE_DIR=off
+    - export PIP_DISABLE_PIP_VERSION_CHECK=on
+    - export PIP_DEFAULT_TIMEOUT=100
+    - export PYTHONUNBUFFERED=1
+    - export PYTHONDONTWRITEBYTECODE=1
+    - export PYTHONFAULTHANDLER=1
+    - export SOURCE_CODE_DIR=$SOURCE_CODE_DIR
+    - export APP_CODE_DIR=$APP_CODE_DIR
+    - export TEST_CODE_DIR=$TEST_CODE_DIR
+    - export PYTHONPATH=$SOURCE_CODE_DIR
+    - export POETRY_VIRTUALENVS_IN_PROJECT=false
+    - export POETRY_NO_INTERACTION=1
+    - export POETRY_VERSION=$POETRY_VERSION
+    - export SECRETS_PATH=$SECRETS_PATH
+    - export PATH="$POETRY_HOME/bin:$PATH"
+    - export PATH="/root/.local/bin:$PATH"
+    - apt-get update
+    - apt-get install --no-install-recommends -y pipx
+    - pipx install poetry==$POETRY_VERSION
+    - poetry install --all-extras --compile --no-root
+
+flake8-lint-job:
+  interruptible: true
+  stage: lint
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - '**/*'
+    - if: $CI_PIPELINE_SOURCE == "push"
+      changes:
+        - $SOURCE_CODE_DIR'/**/*'
+    - if: $CI_PIPELINE_SOURCE == "push"
+      changes:
+        - '**/*'
+      when: manual
+  script:
+    - poetry run flake8 --jobs=1 $SOURCE_CODE_DIR
+
+mypy-lint-job:
+  interruptible: true
+  stage: lint
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - '**/*'
+    - if: $CI_PIPELINE_SOURCE == "push"
+      changes:
+        - $APP_CODE_DIR/**/*
+    - if: $CI_PIPELINE_SOURCE == "push"
+      changes:
+        - '**/*'
+      when: manual
+  script:
+    - poetry run mypy $APP_CODE_DIR
+
+pytest-test-job:
+  interruptible: true
+  stage: test
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - '**/*'
+    - if: $CI_PIPELINE_SOURCE == "push"
+      changes:
+        - $SOURCE_CODE_DIR/**/*
+    - if: $CI_PIPELINE_SOURCE == "push"
+      changes:
+        - '**/*'
+      when: manual
+  script:
+    - poetry run pytest --disable-warnings --cov=$APP_CODE_DIR --cov-fail-under=90 $SOURCE_CODE_DIR
