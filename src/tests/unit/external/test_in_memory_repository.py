@@ -1,6 +1,6 @@
 import pytest
 
-from app.in_memory_repository import Token, User
+from app.external.in_memory_repository import Token, User
 from tests.unit.conftest import invalid_user, token_list, user_list
 
 

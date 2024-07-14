@@ -3,8 +3,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from app.in_memory_repository import InMemoryRepository
-from app.service import AuthService, RepositoryError, Token, User
+from app.core.authentication import AuthService, RepositoryError, Token, User
+from app.external.in_memory_repository import InMemoryRepository
 
 issued_at = datetime.now()
 encoded_token = 'sdfa.asfsd.safd'

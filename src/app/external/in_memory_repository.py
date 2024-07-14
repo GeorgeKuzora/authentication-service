@@ -1,6 +1,6 @@
 import logging
 
-from app.service import Token, User  # type: ignore
+from app.core.authentication import Token, User  # type: ignore
 
 logger = logging.getLogger(__name__)
 

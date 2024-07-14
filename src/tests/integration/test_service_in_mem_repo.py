@@ -1,8 +1,8 @@
 import pytest
 
-from app.config import get_auth_config
-from app.in_memory_repository import InMemoryRepository
-from app.service import AuthService, Token, User
+from app.core.authentication import AuthService, Token, User
+from app.core.config import get_auth_config
+from app.external.in_memory_repository import InMemoryRepository
 
 
 @pytest.fixture
