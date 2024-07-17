@@ -17,6 +17,7 @@ pytest = "^8.2.2"
 mypy = "^1.10.1"
 types-passlib = "*"
 coverage = "*"
+coverage-conditional-plugin = "*"
 pytest-cov = "*"
 
 [build-system]
