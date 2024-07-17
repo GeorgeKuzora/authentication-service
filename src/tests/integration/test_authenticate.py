@@ -1,8 +1,10 @@
+from collections import namedtuple
+
 import pytest
 
-from app.config import get_auth_config
-from app.in_memory_repository import InMemoryRepository
-from app.service import AuthService, Token, User
+from app.core.authentication import AuthService, Token, User
+from app.core.config import get_auth_config
+from app.external.in_memory_repository import InMemoryRepository
 
 
 @pytest.fixture
@@ -11,37 +13,42 @@ def service():
     Фикстура создает экземпляр сервиса.
 
     Атрибуты сервиса repository, config являются реальными объектами.
+
+    :return: экземпляр сервиса
+    :rtype: AuthService
     """
     config = get_auth_config()
     repository = InMemoryRepository()
     return AuthService(repository=repository, config=config)
 
 
-usenames_and_passwords = [
-    {'username': 'george', 'password': 'password_1'},
-    {'username': 'peter', 'password': 'password_2'},
-]
+TestUser = namedtuple('TestUser', 'username, password')
+
+test_user1 = TestUser('george', 'password_1')
+test_user2 = TestUser('peter', 'password_2')
 
 
 class TestRegister:
     """Тестирует метод register."""
 
+    register_fields = 'username, password'
+
     @pytest.mark.parametrize(
-        'username, password', (
+        register_fields, (
             pytest.param(
-                usenames_and_passwords[0]['username'],
-                usenames_and_passwords[0]['password'],
+                test_user1.username,
+                test_user1.password,
                 id='valid user 1',
             ),
             pytest.param(
-                usenames_and_passwords[1]['username'],
-                usenames_and_passwords[1]['password'],
+                test_user2.username,
+                test_user2.password,
                 id='valid user 2',
             ),
         ),
     )
     def test_register(
-        self, username, password, service: AuthService,  # noqa
+        self, username, password, service: AuthService,
     ):
         """Тестирует метод register."""
         token = service.register(username, password)
@@ -50,7 +57,7 @@ class TestRegister:
             assert token.subject.username == username
             assert token.encoded_token
             assert token.issued_at
-            assert service._verify_password(  # noqa
+            assert service.hash.validate(
                 password, token.subject.password_hash,
             )
         else:
@@ -64,59 +71,75 @@ class TestAuthenticate:
     is_none = True
 
     @pytest.fixture
-    def service_db_user_yes_token_no(self, service: AuthService):  # noqa
+    def service_db_user_yes_token_no(self, service: AuthService):
         """
         Возвращает функцию для создания сервиса.
 
         Возвращаемая функция примает username и password
         и создает запись о пользователе в базе данных.
+
+        :param service: экземпляр сервиса
+        :type service: AuthService
+        :return: функция создания сервиса
+        :rtype: callable
         """
-        def _service_db_user_yes_token_no(username, password):
+        def _service_db_user_yes_token_no(username, password):  # noqa: WPS430, E501 need for service state parametrization
             user_id = 1
             user = User(
                 username,
-                service._get_password_hash(password),  # noqa
+                service.hash.get(password),
                 user_id,
             )
             service.repository.create_user(user)
             return service
-        yield _service_db_user_yes_token_no
+        return _service_db_user_yes_token_no
 
     @pytest.fixture
-    def service_db_user_yes_token_yes(self, service: AuthService):  # noqa
+    def service_db_user_yes_token_yes(self, service: AuthService):
         """
         Возвращает функцию для создания сервиса.
 
         Возвращаемая функция примает username и password,
         создает запись о пользователе в базе данных
         и добавляет токен для пользователя в базу данных.
+
+        :param service: экземпляр сервиса
+        :type service: AuthService
+        :return: функция создания сервиса
+        :rtype: callable
         """
-        def _service_db_user_yes_token_yes(username, password):
+        def _service_db_user_yes_token_yes(username, password):  # noqa: WPS430, E501 need for service state parametrization
             user_id = 1
             user = User(
                 username,
-                service._get_password_hash(password),  # noqa
+                service.hash.get(password),
                 user_id,
             )
-            service.repository.create_user(user)
-            service._create_token(user)  # noqa
+            user = service.repository.create_user(user)
+            token = service.encoder.encode(user)
+            service.repository.create_token(token)
             return service
-        yield _service_db_user_yes_token_yes
+        return _service_db_user_yes_token_yes
 
     @pytest.fixture
-    def service_db_user_not_in_db(self, service: AuthService):  # noqa
+    def service_db_user_not_in_db(self, service: AuthService):
         """
         Возвращает функцию для создания сервиса.
 
         Возвращаемая функция примает username и password.
         Возвращаемая функция создвет сервис без записей в базе данных.
+
+        :param service: экземпляр сервиса
+        :type service: AuthService
+        :return: функция создания сервиса
+        :rtype: callable
         """
-        def _service_db_user_not_id_db(username, password):
+        def _service_db_user_not_id_db(username, password):  # noqa: WPS430, E501 need for service state parametrization
             return service
-        yield _service_db_user_not_id_db
+        return _service_db_user_not_id_db
 
     @pytest.fixture
-    def service_db_user_with_invalid_pass(self, service: AuthService):  # noqa
+    def service_db_user_with_invalid_pass(self, service: AuthService):
         """
         Возвращает функцию для создания сервиса.
 
@@ -124,72 +147,72 @@ class TestAuthenticate:
         создает запись о пользователе в базе данных.
         При этом созданный пользователь имеет хэш пароля
         не соответствующий переданному паролю.
+
+        :param service: экземпляр сервиса
+        :type service: AuthService
+        :return: функция создания сервиса
+        :rtype: callable
         """
-        def _service_db_user_yes_token_no(username, password):
+        def _service_db_user_yes_token_no(username, password):  # noqa: WPS430, E501 need for service state parametrization
             user_id = 1
-            invalid_password = 'invalid_password'
+            invalid_password = 'invalid_password'  # noqa: S105 test pass
             user = User(
                 username,
-                service._get_password_hash(invalid_password),  # noqa
+                service.hash.get(invalid_password),
                 user_id,
             )
             service.repository.create_user(user)
             return service
-        yield _service_db_user_yes_token_no
+        return _service_db_user_yes_token_no
 
     @pytest.mark.parametrize(
-        'username, password, service_state_factory, token_is_none', (
+        'user, service_state_factory, token_is_none', (
             pytest.param(
-                usenames_and_passwords[0]['username'],
-                usenames_and_passwords[0]['password'],
+                test_user1,
                 'service_db_user_yes_token_no',
                 is_not_none,
                 id='user in db without token',
             ),
             pytest.param(
-                usenames_and_passwords[0]['username'],
-                usenames_and_passwords[0]['password'],
+                test_user1,
                 'service_db_user_yes_token_yes',
                 is_not_none,
                 id='user in db with token',
             ),
             pytest.param(
-                usenames_and_passwords[0]['username'],
-                usenames_and_passwords[0]['password'],
+                test_user1,
                 'service_db_user_not_in_db',
                 is_none,
                 id='user not in db',
             ),
             pytest.param(
-                usenames_and_passwords[0]['username'],
-                usenames_and_passwords[0]['password'],
+                test_user1,
                 'service_db_user_with_invalid_pass',
                 is_none,
                 id='user has invalid password',
             ),
         ),
     )
-    def test_authenticate(  # noqa
+    def test_authenticate(
         self,
-        username,
-        password,
+        user,
         service_state_factory,
         token_is_none,
         request,
     ):
         """Тестирует метод authenticate."""
         factory = request.getfixturevalue(service_state_factory)
-        srv: AuthService = factory(username, password)
+        srv: AuthService = factory(user.username, user.password)
 
-        token: Token | None = srv.authenticate(username, password)
+        token: Token | None = srv.authenticate(
+            user.username, user.password,
+        )
 
         if token_is_none:
             assert token is None
         else:
             assert token is not None
-            assert token.subject.username == username
-            assert srv._verify_password(  # noqa
-                password, token.subject.password_hash,
+            assert srv.hash.validate(
+                user.password, token.subject.password_hash,
             )
-            assert token.encoded_token
-            assert token.issued_at
+            assert token.subject.username == user.username

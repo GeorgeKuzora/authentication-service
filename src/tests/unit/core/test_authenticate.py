@@ -1,7 +1,11 @@
 import pytest
 
-from app.service import AuthService, RepositoryError, User
+from app.core.authentication import AuthService, User
+from app.core.errors import RepositoryError
 from tests.unit.conftest import raise_repository_error, token_list, user_list
+
+param_fields = 'user, password, expected_token'
+param_fields_with_side_effect = 'user, expected_token, side_effect'
 
 
 class TestRegister:
@@ -10,7 +14,7 @@ class TestRegister:
     passwords = ['plain_password1', 'plain_password2']
 
     @pytest.mark.parametrize(
-        'user, password, expected_token', (
+        param_fields, (
             pytest.param(
                 user_list[0],
                 passwords[0],
@@ -40,14 +44,10 @@ class TestRegister:
 
         assert isinstance(recieved_token, type(expected_token))
         if recieved_token is not None:
-            assert recieved_token.subject.username == expected_token.subject.username  # noqa
-            assert recieved_token.subject.user_id == expected_token.subject.user_id  # noqa
-            assert recieved_token.subject.password_hash == expected_token.subject.password_hash  # noqa
-            assert recieved_token.issued_at == expected_token.issued_at
-            assert recieved_token.encoded_token == expected_token.encoded_token
+            assert recieved_token == expected_token
 
     @pytest.mark.parametrize(
-        'user, expected_token, side_effect', (
+        param_fields_with_side_effect, (
             pytest.param(
                 user_list[0],
                 None,
@@ -66,6 +66,7 @@ class TestRegister:
         self, user: User, expected_token, side_effect, service: AuthService,
     ):
         """Тестирует негативные сценарии."""
+        password = 'password'  # noqa: S105 test password
         if expected_token is None:
             service.repository.create_user.return_value = user
             service.repository.create_token.side_effect = side_effect
@@ -74,7 +75,7 @@ class TestRegister:
             service.repository.create_token.return_value = expected_token
 
         with pytest.raises(RepositoryError):
-            service.register(user.username, 'password')
+            service.register(user.username, password)
 
 
 class TestAuthenticate:
@@ -83,12 +84,12 @@ class TestAuthenticate:
     passwords = ['plain_password1', 'plain_password2']
 
     @pytest.mark.parametrize(
-        'user, password, expected_token', (
+        param_fields, (
             pytest.param(
                 user_list[0],
                 passwords[0],
                 token_list[0],
-                id='valid user 1',
+                id='update token',
             ),
         ),
     )
@@ -96,7 +97,7 @@ class TestAuthenticate:
         self, user: User, password, expected_token, service: AuthService,
     ):
         """Тестирует сценарий пользователь и токен пользователя найдены."""
-        password_hash = service._get_password_hash(password)  # noqa
+        password_hash = service.hash.get(password)
         user.password_hash = password_hash
         service.repository.get_user.return_value = user
         service.repository.get_token.return_value = expected_token
@@ -106,21 +107,17 @@ class TestAuthenticate:
 
         assert isinstance(recieved_token, type(expected_token))
         if recieved_token is not None:
-            assert recieved_token.subject.username == expected_token.subject.username  # noqa
-            assert recieved_token.subject.user_id == expected_token.subject.user_id  # noqa
-            assert recieved_token.subject.password_hash == expected_token.subject.password_hash  # noqa
-            assert recieved_token.issued_at == expected_token.issued_at
-            assert recieved_token.encoded_token == expected_token.encoded_token
+            assert recieved_token == expected_token
         else:
             raise AssertionError()
 
     @pytest.mark.parametrize(
-        'user, password, expected_token', (
+        param_fields, (
             pytest.param(
                 user_list[0],
                 passwords[0],
                 token_list[0],
-                id='valid user 1',
+                id='create token',
             ),
         ),
     )
@@ -128,7 +125,7 @@ class TestAuthenticate:
         self, user: User, password, expected_token, service: AuthService,
     ):
         """Тестирует сценарий токен пользователя не найден."""
-        password_hash = service._get_password_hash(password)  # noqa
+        password_hash = service.hash.get(password)
         user.password_hash = password_hash
         service.repository.get_user.return_value = user
         service.repository.get_token.return_value = None
@@ -138,21 +135,17 @@ class TestAuthenticate:
 
         assert isinstance(recieved_token, type(expected_token))
         if recieved_token is not None:
-            assert recieved_token.subject.username == expected_token.subject.username  # noqa
-            assert recieved_token.subject.user_id == expected_token.subject.user_id  # noqa
-            assert recieved_token.subject.password_hash == expected_token.subject.password_hash  # noqa
-            assert recieved_token.issued_at == expected_token.issued_at
-            assert recieved_token.encoded_token == expected_token.encoded_token
+            assert recieved_token == expected_token
         else:
             raise AssertionError()
 
     @pytest.mark.parametrize(
-        'user, password, expected_token', (
+        param_fields, (
             pytest.param(
                 user_list[0],
                 passwords[0],
                 token_list[0],
-                id='valid user 1',
+                id='user not found token is None',
             ),
         ),
     )
@@ -160,7 +153,7 @@ class TestAuthenticate:
         self, user: User, password, expected_token, service: AuthService,
     ):
         """Тестирует сценарий пользователь не найден."""
-        password_hash = service._get_password_hash(password)  # noqa
+        password_hash = service.hash.get(password)
         user.password_hash = password_hash
         service.repository.get_user.return_value = None
         service.repository.get_token.return_value = expected_token
@@ -171,12 +164,12 @@ class TestAuthenticate:
         assert recieved_token is None
 
     @pytest.mark.parametrize(
-        'user, password, expected_token', (
+        param_fields, (
             pytest.param(
                 user_list[0],
                 passwords[0],
                 token_list[0],
-                id='valid user 1',
+                id='not veirfied token is None',
             ),
         ),
     )
@@ -184,9 +177,9 @@ class TestAuthenticate:
         self, user: User, password, expected_token, service: AuthService,
     ):
         """Тестирует сценарий пользователь не найден."""
-        password_hash = service._get_password_hash(password)  # noqa
+        password_hash = service.hash.get(password)
         user.password_hash = password_hash
-        invalid_password = 'invalid_password'
+        invalid_password = 'invalid_password'  # noqa: S105 invalid pass
 
         service.repository.get_user.return_value = user
         service.repository.get_token.return_value = expected_token
@@ -201,7 +194,7 @@ class TestAuthenticate:
             pytest.param(
                 user_list[0],
                 passwords[0],
-                id='valid user 1',
+                id='raises RepositoryError',
             ),
         ),
     )
@@ -209,7 +202,7 @@ class TestAuthenticate:
         self, user: User, password, service: AuthService,
     ):
         """Тестирует возврат ошибки при ошибке в репозитории."""
-        password_hash = service._get_password_hash(password)  # noqa
+        password_hash = service.hash.get(password)
         user.password_hash = password_hash
 
         service.repository.get_user.side_effect = raise_repository_error

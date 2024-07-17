@@ -1,4 +1,4 @@
-from app.main import main
+from app.service import main
 
 
 def test_main():
