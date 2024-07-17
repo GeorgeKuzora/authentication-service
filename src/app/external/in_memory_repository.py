@@ -1,6 +1,6 @@
 import logging
 
-from app.core.authentication import Token, User  # type: ignore
+from app.core.authentication import Token, User
 
 logger = logging.getLogger(__name__)
 
@@ -33,11 +33,10 @@ class InMemoryRepository:
         Создает, сохраняет в базе данных
         и возвращает индексированную запись о пользователе.
 
-        Args:
-            user: User - неидексированная запись о пользователе.
-
-        Returns:
-            User - индексированная запись о пользователе.
+        :param user: неидексированная запись о пользователе.
+        :type user: User
+        :return: индексированная запись о пользователе.
+        :rtype: User
         """
         indexed_user = User(
             username=user.username,
@@ -56,11 +55,10 @@ class InMemoryRepository:
         Создает, сохраняет в базе данных
         и возвращает индексированную запись о токене пользователя.
 
-        Args:
-            token: Token - неидексированная запись о токене пользователя.
-
-        Returns:
-            Token - индексированная запись о токене пользователя.
+        :param token: неидексированная запись о токене пользователя.
+        :type token: Token
+        :return: индексированная запись о токене пользователя.
+        :rtype: Token
         """
         indexed_token = Token(
             subject=token.subject,
@@ -79,19 +77,18 @@ class InMemoryRepository:
 
         Получает и возвращает запись о пользователе из базы данных.
 
-        Args:
-            user: User - данные пользователя.
-
-        Returns:
-            User | None - запись о пользователе в базе данных.
+        :param user: неидексированная запись о пользователе.
+        :type user: User
+        :return: индексированная запись о пользователе.
+        :rtype: User
         """
         try:
-            in_db_user, *_ = [
+            in_db_user = [
                 member for member in self.users if (
                     member.username == user.username
                 )
-            ]
-        except ValueError:
+            ][0]
+        except IndexError:
             logger.warning(f'{user} is not found')
             return None
 
@@ -104,19 +101,18 @@ class InMemoryRepository:
 
         Получает и возвращает запись о токене пользователя из базы данных.
 
-        Args:
-            user: User - данные пользователя.
-
-        Returns:
-            Token | None - запись о токене пользователя в базе данных.
+        :param user: неидексированная запись о пользователе.
+        :type user: User
+        :return: индексированная запись о токене  пользователе.
+        :rtype: Token
         """
         try:
-            token, *_ = [
+            token = [
                 member for member in self.tokens if (
                     member.subject.user_id == user.user_id
                 )
-            ]
-        except ValueError:
+            ][0]
+        except IndexError:
             logger.warning(f'token for {user} is not found')
             return None
 
@@ -129,11 +125,10 @@ class InMemoryRepository:
 
         Обновляет и возвращает запись о токене пользователя из базы данных.
 
-        Args:
-            token: Token - данные о токене.
-
-        Returns:
-            Token | None - запись о токене пользователя в базе данных.
+        :param token: неидексированная запись о токене пользователя.
+        :type token: Token
+        :return: индексированная запись о токене пользователя.
+        :rtype: Token
         """
         token_in_db = self.get_token(token.subject)
         if token_in_db is None:

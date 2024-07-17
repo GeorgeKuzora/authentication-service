@@ -1,8 +1,8 @@
 import logging
 
-from app.core.authentication import AuthService  # type: ignore
-from app.core.config import get_auth_config  # type: ignore
-from app.external.in_memory_repository import InMemoryRepository  # type: ignore  # noqa
+from app.core.authentication import AuthService
+from app.core.config import get_auth_config
+from app.external.in_memory_repository import InMemoryRepository
 
 logger = logging.getLogger(__name__)
 
@@ -14,28 +14,24 @@ def main() -> None:
     service = AuthService(repository, config)
 
     logger.info('user registration\n')
-    token = service.register(
+    service.register(  # noqa: S106 test password
         username='jonny', password='password1',
     )
-    logger.info(f'created {token}')
 
     logger.info('failed user authentication\n')
-    token = service.authenticate(
+    service.authenticate(  # noqa: S106 test password
         username='jonny', password='password2',
     )
-    logger.info(f'created {token}')
 
     logger.info('user not found\n')
-    token = service.authenticate(
+    service.authenticate(  # noqa: S106 test password
         username='peter', password='password1',
     )
-    logger.info(f'created {token}')
 
     logger.info('user authentication\n')
-    token = service.authenticate(
+    service.authenticate(  # noqa: S106 test password
         username='jonny', password='password1',
     )
-    logger.info(f'created {token}')
 
 
 if __name__ == '__main__':

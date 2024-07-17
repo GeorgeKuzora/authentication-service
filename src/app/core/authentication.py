@@ -1,21 +1,14 @@
 import logging
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Protocol
+from typing import Protocol, Self
 
 import jwt
 from passlib.context import CryptContext
 
+from app.core.config import AuthConfig
+
 logger = logging.getLogger(__name__)
-
-
-class RepositoryError(Exception):
-    """
-    Исключение возникающее при запросе в хранилище данных.
-
-    Импортировать в имплементации репозитория данных,
-    для вызова исключения при ошибке доступа к данным.
-    """
 
 
 @dataclass
@@ -31,6 +24,20 @@ class User:
     username: str
     password_hash: str
     user_id: int | None = None
+
+    def __eq__(self, user: Self) -> bool:
+        """
+        Метод сравнения двух объектов.
+
+        :param user: объект для сравнения
+        :type: Self
+        :return: логическое значение равны ли объекты
+        :rtype: bool
+        """
+        return (
+            self.username == user.username and
+            self.password_hash == user.password_hash
+        )
 
 
 @dataclass
@@ -49,19 +56,20 @@ class Token:
     encoded_token: str
     token_id: int | None = None
 
+    def __eq__(self, token: Self) -> bool:
+        """
+        Метод сравнения двух объектов.
 
-@dataclass
-class Config:
-    """
-    Данные конфигурации сервиса.
-
-    Attributes:
-        token_algorithm: str  - алгоритм кодирования токена.
-        secret_key: str - ключ для кодирования токена.
-    """
-
-    token_algorithm: str
-    secret_key: str
+        :param token: объект для сравнения
+        :type: Self
+        :return: логическое значение равны ли объекты
+        :rtype: bool
+        """
+        return (
+            self.subject == token.subject and
+            self.issued_at == token.issued_at and
+            self.encoded_token == token.encoded_token
+        )
 
 
 class Repository(Protocol):
@@ -73,24 +81,114 @@ class Repository(Protocol):
     """
 
     def create_user(self, user: User) -> User:
-        """Абстрактный метод создания пользователя."""
-        ...
+        """
+        Абстрактный метод создания пользователя.
+
+        :param user: объект пользователя
+        :type user: User
+        """
+        ...  # noqa: WPS428 default Protocol syntax
 
     def create_token(self, token: Token) -> Token:
-        """Абстрактный метод создания токена."""
-        ...
+        """
+        Абстрактный метод создания токена.
+
+        :param token: объект токена
+        :type token: Token
+        """
+        ...  # noqa: WPS428 default Protocol syntax
 
     def get_user(self, user: User) -> User | None:
-        """Абстрактный метод получения токена."""
-        ...
+        """
+        Абстрактный метод получения токена.
+
+        :param user: объект пользователя
+        :type user: User
+        """
+        ...  # noqa: WPS428 default Protocol syntax
 
     def get_token(self, user: User) -> Token | None:
-        """Абстрактный метод получения токена."""
-        ...
+        """
+        Абстрактный метод получения токена.
+
+        :param user: объект пользователя
+        :type user: User
+        """
+        ...  # noqa: WPS428 default Protocol syntax
 
     def update_token(self, token: Token) -> Token:
-        """Абстрактный метод обновления токена."""
-        ...
+        """
+        Абстрактный метод обновления токена.
+
+        :param token: объект токена
+        :type token: Token
+        """
+        ...  # noqa: WPS428 default Protocol syntax
+
+
+@dataclass
+class Hash:
+    """Класс алгоритма хэширования."""
+
+    _pwd_context: CryptContext = CryptContext(
+        schemes=['bcrypt'], deprecated='auto',
+    )
+
+    def get(self, string: str) -> str:
+        """
+        Метод получения хэша.
+
+        :param string: строка для хэширования
+        :type string: str
+        :return: хэш переданного значения
+        :rtype: str
+        """
+        return self._pwd_context.hash(string)
+
+    def validate(self, string: str, hashed_str: str) -> bool:
+        """
+        Метод валидации хэша.
+
+        :param string: строка для валидации.
+        :type string: str
+        :param hashed_str: хэш для валидации
+        :type hashed_str: str
+        :return: валиден ли хэш
+        :rtype: bool
+        """
+        return self._pwd_context.verify(string, hashed_str)
+
+
+class JWTEncoder:
+    """Алгоритм шифрования JWT токена."""
+
+    def __init__(self, config: AuthConfig) -> None:
+        """
+        Метод инициализации.
+
+        :param config: конфигурация алгоритма
+        :type config: AuthConfig
+        """
+        self.config = config
+
+    def encode(self, user: User) -> Token:
+        """
+        Метод кодирования токена.
+
+        :param user: пользователь владелец токена
+        :type user: User
+        :return: токен пользователя
+        :rtype: Token
+        """
+        issued_at = datetime.now()
+        encoded_token: str = jwt.encode(
+            payload={'sub': user.username, 'iat': issued_at},
+            key=self.config.secret_key,
+            algorithm=self.config.algorithm,
+        )
+        return Token(
+            subject=user, issued_at=issued_at, encoded_token=encoded_token,
+        )
 
 
 class AuthService:
@@ -107,18 +205,18 @@ class AuthService:
         _pwd_context: CryptContext - контекст для хэширования пароля.
     """
 
-    def __init__(self, repository: Repository, config: Config) -> None:
+    def __init__(self, repository: Repository, config: AuthConfig) -> None:
         """
         Функция инициализации.
 
-        Args:
-            repository: Repository - хранилище данных.
-            config: Config - данные конфигурации сервиса
+        :param repository: хранилище данных.
+        :type repository: Repository
+        :param config: данные конфигурации сервиса
+        :type config: AuthConfig
         """
         self.repository = repository
-        self._token_encoding_algorithm = config.token_algorithm
-        self._secret_key = config.secret_key
-        self._pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+        self.encoder = JWTEncoder(config)
+        self.hash = Hash()
 
     def register(self, username: str, password: str) -> Token | None:
         """
@@ -127,59 +225,18 @@ class AuthService:
         Регистрирует и сохраняет пользователя в базе данных.
         Создает и возвращает токен для зарегистрированного пользователя.
 
-        Args:
-            username: str - имя пользователя.
-            password: str - пароль пользователя.
-
-        Returns:
-            Token - JWT токен пользователя.
-
-        Raises:
-            RepositoryError - в случае ошибки доступа к хранилищу данных.
+        :param username: имя пользователя.
+        :type username: str
+        :param password: пароль пользователя.
+        :type password: str
+        :return: JWT токен пользователя.
+        :rtype: Token, None
         """
-        password_hash = self._get_password_hash(password)
+        password_hash = self.hash.get(password)
         user = User(username=username, password_hash=password_hash)
-        user = self._create_user(user)
-        return self._create_token(user)
-
-    def _get_password_hash(self, password) -> str:
-        return self._pwd_context.hash(password)
-
-    def _create_user(self, user: User) -> User:
-        try:
-            user_in_db = self.repository.create_user(user)
-        except RepositoryError as err:
-            logger.error(f'repository error during user creation {user}')
-            raise RepositoryError(
-                f'repository error during user creation {user}',
-            ) from err
-        logger.info(f'user {user_in_db} created in db')
-        return user_in_db
-
-    def _create_token(self, user: User) -> Token:
-        token = self._encode_token(user)
-        try:
-            token = self.repository.create_token(token)
-        except RepositoryError as err:
-            logger.error(
-                f'repository error during token creation for a {user}',
-            )
-            raise RepositoryError(
-                f'repository error during token creation for a {user}',
-            ) from err
-        logger.info(f'token {token} for user {user.username} created in db')
-        return token
-
-    def _encode_token(self, user: User) -> Token:
-        issued_at = datetime.now()
-        encoded_token: str = jwt.encode(
-            payload={'sub': user.username, 'iat': issued_at},
-            key=self._secret_key,
-            algorithm=self._token_encoding_algorithm,
-        )
-        return Token(
-            subject=user, issued_at=issued_at, encoded_token=encoded_token,
-        )
+        user = self.repository.create_user(user)
+        token = self.encoder.encode(user)
+        return self.repository.create_token(token)
 
     def authenticate(self, username: str, password: str) -> Token | None:
         """
@@ -191,75 +248,32 @@ class AuthService:
         Если пользователь не найден либо данные пользователя неверны,
         возвращает None.
 
-        Args:
-            username: str - имя пользователя.
-            password: str - пароль пользователя.
-
-        Returns:
-            Token | None - JWT токен пользователя.
-
-        Raises:
-            RepositoryError - в случае ошибки доступа к хранилищу данных.
+        :param username: имя пользователя.
+        :type username: str
+        :param password: пароль пользователя.
+        :type password: str
+        :return: JWT токен пользователя.
+        :rtype: Token, None
         """
-        password_hash = self._get_password_hash(password)
+        password_hash = self.hash.get(password)
         user = User(username=username, password_hash=password_hash)
-        user_in_db = self._get_user(user)
+        user_in_db = self.repository.get_user(user)
 
         if user_in_db is None:
             logger.info(f'user {username} not found in db')
             return None
-        elif not self._verify_password(
-            plain_password=password, hashed_password=user_in_db.password_hash,
+
+        if not self.hash.validate(  # noqa: WPS337 one condition
+            password, user_in_db.password_hash,
         ):
             logger.info(f'user {username} failed password verification')
             return None
 
-        token = self._get_token(user)
+        token = self.repository.get_token(user)
         if token is None:
-            token = self._create_token(user_in_db)
+            token = self.encoder.encode(user)
+            token = self.repository.create_token(token)
         else:
-            token = self._update_token(user_in_db)
-        return token
-
-    def _verify_password(self, plain_password, hashed_password) -> bool:
-        return self._pwd_context.verify(plain_password, hashed_password)
-
-    def _get_user(self, user: User) -> User | None:
-        try:
-            user_in_db: User | None = self.repository.get_user(user)
-        except RepositoryError as err:
-            logger.error(
-                f"RepositoryError: can't get a {user}",
-            )
-            raise RepositoryError(
-                f"RepositoryError: can't get a {user}",
-            ) from err
-        return user_in_db
-
-    def _get_token(self, user: User) -> Token | None:
-        try:
-            token = self.repository.get_token(user)
-        except RepositoryError as err:
-            logger.error(
-                f"RepositoryError: can't get token for a {user}",
-            )
-            raise RepositoryError(
-                f"RepositoryError: can't get token for a {user}",
-            ) from err
-        return token
-
-    def _update_token(self, user: User) -> Token:
-        token = self._encode_token(user)
-
-        try:
+            token = self.encoder.encode(user)
             token = self.repository.update_token(token)
-        except RepositoryError as err:
-            logger.error(
-                f"RepositoryError: can't update token for a {user}",
-            )
-            raise RepositoryError(
-                f"RepositoryError: can't update token for a {user}",
-            ) from err
-
-        logger.info(f'token for user {user.username} updated in db')
         return token

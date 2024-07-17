@@ -3,11 +3,12 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from app.core.authentication import AuthService, RepositoryError, Token, User
+from app.core.authentication import AuthService, Token, User
+from app.core.errors import RepositoryError
 from app.external.in_memory_repository import InMemoryRepository
 
 issued_at = datetime.now()
-encoded_token = 'sdfa.asfsd.safd'
+encoded_token = 'sdfa.asfsd.safd'  # noqa: S105 test encoded token
 user_list = [
     User('peter', '13rasf', 1),
     User('max', 'sdfad', 2),
@@ -26,11 +27,14 @@ def service():
     Фикстура создает экземпляр сервиса.
 
     Атрибуты сервиса repository, config являются mock объектами.
+
+    :return: экземпляр сервиса
+    :rtype: AuthService
     """
     repository = MagicMock()
     config = MagicMock()
-    config.token_algorithm = 'HS256'
-    config.secret_key = '09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b89e8d3e7'  # noqa
+    config.algorithm = 'HS256'  # noqa: S105 test algorithm name
+    config.secret_key = '09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b89e8d3e7'  # noqa: S105, E501 test secret key
 
     return AuthService(repository=repository, config=config)
 
@@ -47,7 +51,7 @@ def raise_repository_error(*args, **kwargs):
 
 
 @pytest.fixture
-def single_user_in_repo_facrory(repository):  # noqa
+def single_user_in_repo_facrory(repository):
     """Фикстура репозитория с одной записью о пользователе."""
     users_in_repo = 1
     repository.create_user(user_list[0])
@@ -55,7 +59,7 @@ def single_user_in_repo_facrory(repository):  # noqa
 
 
 @pytest.fixture
-def two_users_in_repo_facrory(repository):  # noqa
+def two_users_in_repo_facrory(repository):
     """Фикстура репозитория с двумя записями о пользователях."""
     users_in_repo = 2
     for user_id in range(users_in_repo):
@@ -64,7 +68,7 @@ def two_users_in_repo_facrory(repository):  # noqa
 
 
 @pytest.fixture
-def single_token_in_repo_facrory(repository):  # noqa
+def single_token_in_repo_facrory(repository):
     """Фикстура репозитория с одной записью о токене."""
     tokens_in_repo = 1
     repository.create_token(token_list[0])
@@ -72,7 +76,7 @@ def single_token_in_repo_facrory(repository):  # noqa
 
 
 @pytest.fixture
-def two_tokens_in_repo_facrory(repository):  # noqa
+def two_tokens_in_repo_facrory(repository):
     """Фикстура репозитория с двумя записями о токенах."""
     tokens_in_repo = 2
     for token_id in range(tokens_in_repo):

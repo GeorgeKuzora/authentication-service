@@ -18,7 +18,7 @@ class TestCreateUser:
         ),
     )
     def test_create_user_returns_indexed_user(
-        self, user: User, expected: User, expected_user_id, repository,  # noqa
+        self, user: User, expected: User, expected_user_id, repository,
     ):
         """Тестирует что возвращается пользователь с верным id."""
         response_user: User = repository.create_user(user)
@@ -32,7 +32,7 @@ class TestCreateUser:
         ),
     )
     def test_create_user_db_index_increases(
-        self, user_list: list[User], expected_last_user_id, repository,  # noqa
+        self, user_list: list[User], expected_last_user_id, repository,
     ):
         """Тестирует что индекс при создании пользователя растет."""
         for user in user_list:
@@ -59,7 +59,7 @@ class TestCreateToken:
         ),
     )
     def test_create_token_returns_indexed_token(
-        self, token: Token, expected: Token, expected_token_id, repository,  # noqa
+        self, token: Token, expected: Token, expected_token_id, repository,
     ):
         """Тестирует что возвращается токен с верным id."""
         response_token: Token = repository.create_token(token)
@@ -73,7 +73,7 @@ class TestCreateToken:
         ),
     )
     def test_create_token_db_index_increases(
-        self, token_list: list[Token], expected_last_token_id, repository,  # noqa
+        self, token_list: list[Token], expected_last_token_id, repository,
     ):
         """Тестирует что индекс при создании токена получает инкремент."""
         for token in token_list:
@@ -109,7 +109,7 @@ class TestGetUser:
         self, user: User, repository_state_factory, expected_user, request,
     ):
         """Тетстирует получение пользователя."""
-        repository, users_in_db = request.getfixturevalue(  # noqa
+        repository, users_in_db = request.getfixturevalue(
             repository_state_factory,
         )
         expected_user_id = users_in_db - 1
@@ -132,10 +132,10 @@ class TestGetUser:
         ),
     )
     def test_get_user_returns_none(
-        self, invalid_user: User, repository_state_factory, expected, request,  # noqa
+        self, invalid_user: User, repository_state_factory, expected, request,
     ):
         """Тестирует что возвращен None если пользователь не найден."""
-        repository, _ = request.getfixturevalue(  # noqa
+        repository, _ = request.getfixturevalue(
             repository_state_factory,
         )
 
@@ -167,7 +167,7 @@ class TestGetToken:
         self, user: Token, repository_state_factory, expected_token, request,
     ):
         """Тетстирует получение токена."""
-        repository, tokens_in_db = request.getfixturevalue(  # noqa
+        repository, tokens_in_db = request.getfixturevalue(
             repository_state_factory,
         )
         expected_token_id = tokens_in_db - 1
@@ -196,7 +196,7 @@ class TestGetToken:
         request,
     ):
         """Тестирует что возвращен None если токен не найден."""
-        repository, _ = request.getfixturevalue(  # noqa
+        repository, _ = request.getfixturevalue(
             repository_state_factory,
         )
 
@@ -227,7 +227,7 @@ def test_update_token(
     token, repository_state_factory, expected_token, expected_id, request,
 ):
     """Тетстирует обновление токена."""
-    repository, _ = request.getfixturevalue(  # noqa
+    repository, _ = request.getfixturevalue(
         repository_state_factory,
     )
 
