@@ -2,7 +2,7 @@ version: "3"
 
 services:
   app:
-    container_name: "dev-container-auth-service"
+    container_name: "auth-service-kuzora"
     build:
       context: app/
       dockerfile: Dockerfile
