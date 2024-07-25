@@ -1,19 +1,19 @@
 import asyncio
-from fastapi import FastAPI, Header, status, HTTPException, UploadFile, BackgroundTasks
-from pydantic import ValidationError
-from typing import Annotated
 import logging
+from typing import Annotated
+
+from fastapi import BackgroundTasks, Header, HTTPException, UploadFile, status
+
 from app.core.authentication import AuthService
-from app.core.models import Token, UserCredentials
 from app.core.config import get_auth_config
+from app.core.errors import AuthorizationError, NotFoundError
+from app.core.models import Token, UserCredentials
 from app.external.in_memory_repository import InMemoryRepository
-from app.external.redis import TokenCache
-from app.core.errors import NotFoundError, AuthorizationError
 from app.external.kafka import KafkaQueue
+from app.external.redis import TokenCache
+from app.service import app
 
 logger = logging.getLogger(__name__)
-
-app = FastAPI()
 
 
 def get_service() -> AuthService:

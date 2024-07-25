@@ -1,8 +1,9 @@
-from pydantic import BaseModel, ValidationError, Field
-from typing import Self
 import logging
-from datetime import datetime, timedelta
 from collections import namedtuple
+from datetime import datetime, timedelta
+from typing import Self
+
+from pydantic import BaseModel, Field, ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -112,3 +113,5 @@ class UserCredentials(BaseModel):
         max_length=validation_rules.username_max_len,
         min_length=validation_rules.password_min_len,
     )
+
+

@@ -1,15 +1,15 @@
 import logging
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Protocol, Any, Annotated
-from fastapi import Header, UploadFile, BackgroundTasks
+from typing import Annotated, Any, Protocol
 
 import jwt
+from fastapi import Header, UploadFile
 from passlib.context import CryptContext
 
 from app.core.config import AuthConfig
-from app.core.models import User, Token, UserCredentials
-from app.core.errors import NotFoundError, AuthorizationError
+from app.core.errors import AuthorizationError, NotFoundError
+from app.core.models import Token, User, UserCredentials
 
 logger = logging.getLogger(__name__)
 
@@ -330,7 +330,7 @@ class AuthService:
 
     async def verify(
         self, user_creds: UserCredentials, image: UploadFile,
-    ) -> dict[str, str]:
+    ) -> None:
         """
         Верифицирует пользователя.
 
@@ -345,4 +345,3 @@ class AuthService:
         :rtype: dict[str, str]
         """
         await self.queue.send_message(user_creds.username, image)
-        return {'message': 'ok'}
