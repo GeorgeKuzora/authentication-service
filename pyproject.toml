@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "authentification-service"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
 authors = ["Georgiy Kuzora <georgiy@kuzora.ru>"]
 readme = "README.md"
@@ -10,6 +10,10 @@ python = "^3.12"
 PyJWT = "^2.8.0"
 passlib = {extras=["bcrypt"], version="^1.7.4"}
 python-dotenv = "^1.0.1"
+fastapi = "0.111.1"
+pydantic-settings = "2.3.4"
+pyyaml = "6.0.1"
+python-multipart = "0.0.9"
 
 [tool.poetry.group.dev.dependencies]
 wemake-python-styleguide = "^0.19.2"
@@ -19,6 +23,8 @@ types-passlib = "*"
 coverage = "*"
 coverage-conditional-plugin = "*"
 pytest-cov = "*"
+anyio = { version = "^4.4.0", extras = ["trio"] }
+pytest-asyncio = "*"
 
 [build-system]
 requires = ["poetry-core"]
