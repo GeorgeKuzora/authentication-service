@@ -7,6 +7,7 @@ from tests.unit.conftest import invalid_user, token_list, user_list
 class TestCreateUser:
     """Тестируем метод create_user."""
 
+    @pytest.mark.asyncio
     @pytest.mark.parametrize(
         'user, expected, expected_user_id', (
             pytest.param(
@@ -17,26 +18,27 @@ class TestCreateUser:
             ),
         ),
     )
-    def test_create_user_returns_indexed_user(
+    async def test_create_user_returns_indexed_user(
         self, user: User, expected: User, expected_user_id, repository,
     ):
         """Тестирует что возвращается пользователь с верным id."""
-        response_user: User = repository.create_user(user)
+        response_user: User = await repository.create_user(user)
 
         assert response_user.username == expected.username
         assert response_user.user_id == expected_user_id
 
+    @pytest.mark.asyncio
     @pytest.mark.parametrize(
         'user_list, expected_last_user_id', (
             pytest.param(user_list, 1, id='index increases'),
         ),
     )
-    def test_create_user_db_index_increases(
+    async def test_create_user_db_index_increases(
         self, user_list: list[User], expected_last_user_id, repository,
     ):
         """Тестирует что индекс при создании пользователя растет."""
         for user in user_list:
-            response_user: User = repository.create_user(user)
+            response_user: User = await repository.create_user(user)
 
         users_db_len = len(repository.users)
 
@@ -48,6 +50,7 @@ class TestCreateUser:
 class TestCreateToken:
     """Тестирует метод create_token."""
 
+    @pytest.mark.asyncio
     @pytest.mark.parametrize(
         'token, expected, expected_token_id', (
             pytest.param(
@@ -58,26 +61,27 @@ class TestCreateToken:
             ),
         ),
     )
-    def test_create_token_returns_indexed_token(
+    async def test_create_token_returns_indexed_token(
         self, token: Token, expected: Token, expected_token_id, repository,
     ):
         """Тестирует что возвращается токен с верным id."""
-        response_token: Token = repository.create_token(token)
+        response_token: Token = await repository.create_token(token)
 
         assert response_token.encoded_token == expected.encoded_token
         assert response_token.token_id == expected_token_id
 
+    @pytest.mark.asyncio
     @pytest.mark.parametrize(
         'token_list, expected_last_token_id', (
             pytest.param(token_list, 1, id='index increases'),
         ),
     )
-    def test_create_token_db_index_increases(
+    async def test_create_token_db_index_increases(
         self, token_list: list[Token], expected_last_token_id, repository,
     ):
         """Тестирует что индекс при создании токена получает инкремент."""
         for token in token_list:
-            response_token: Token = repository.create_token(token)
+            response_token: Token = await repository.create_token(token)
 
         tokens_db_len = len(repository.tokens)
 
@@ -89,6 +93,7 @@ class TestCreateToken:
 class TestGetUser:
     """Тестирует метод get_user."""
 
+    @pytest.mark.asyncio
     @pytest.mark.parametrize(
         'user, repository_state_factory, expected_user', (
             pytest.param(
@@ -105,22 +110,23 @@ class TestGetUser:
             ),
         ),
     )
-    def test_get_user(
+    async def test_get_user(
         self, user: User, repository_state_factory, expected_user, request,
     ):
         """Тетстирует получение пользователя."""
-        repository, users_in_db = request.getfixturevalue(
+        repository, users_in_db = await request.getfixturevalue(
             repository_state_factory,
         )
         expected_user_id = users_in_db - 1
 
-        respose_user: User | None = repository.get_user(user)
+        respose_user: User | None = await repository.get_user(user)
 
         if respose_user is None:
             raise AssertionError
         assert respose_user.username == expected_user.username
         assert respose_user.user_id == expected_user_id
 
+    @pytest.mark.asyncio
     @pytest.mark.parametrize(
         'invalid_user, repository_state_factory, expected', (
             pytest.param(
@@ -131,15 +137,15 @@ class TestGetUser:
             ),
         ),
     )
-    def test_get_user_returns_none(
+    async def test_get_user_returns_none(
         self, invalid_user: User, repository_state_factory, expected, request,
     ):
         """Тестирует что возвращен None если пользователь не найден."""
-        repository, _ = request.getfixturevalue(
+        repository, _ = await request.getfixturevalue(
             repository_state_factory,
         )
 
-        respose_user: User | None = repository.get_user(invalid_user)
+        respose_user: User | None = await repository.get_user(invalid_user)
 
         assert respose_user == expected
 
@@ -147,6 +153,7 @@ class TestGetUser:
 class TestGetToken:
     """Тестирует метод get_token."""
 
+    @pytest.mark.asyncio
     @pytest.mark.parametrize(
         'user, repository_state_factory, expected_token', (
             pytest.param(
@@ -163,21 +170,22 @@ class TestGetToken:
             ),
         ),
     )
-    def test_get_token(
+    async def test_get_token(
         self, user: Token, repository_state_factory, expected_token, request,
     ):
         """Тетстирует получение токена."""
-        repository, tokens_in_db = request.getfixturevalue(
+        repository, tokens_in_db = await request.getfixturevalue(
             repository_state_factory,
         )
         expected_token_id = tokens_in_db - 1
-        respose_token: Token | None = repository.get_token(user)
+        respose_token: Token | None = await repository.get_token(user)
 
         if respose_token is None:
             raise AssertionError
         assert respose_token.encoded_token == expected_token.encoded_token
         assert respose_token.token_id == expected_token_id
 
+    @pytest.mark.asyncio
     @pytest.mark.parametrize(
         'invalid_token, repository_state_factory, expected', (
             pytest.param(
@@ -188,7 +196,7 @@ class TestGetToken:
             ),
         ),
     )
-    def test_get_token_returns_none(
+    async def test_get_token_returns_none(
         self,
         invalid_token: Token,
         repository_state_factory,
@@ -196,15 +204,16 @@ class TestGetToken:
         request,
     ):
         """Тестирует что возвращен None если токен не найден."""
-        repository, _ = request.getfixturevalue(
+        repository, _ = await request.getfixturevalue(
             repository_state_factory,
         )
 
-        respose_token: Token | None = repository.get_token(invalid_token)
+        respose_token: Token | None = await repository.get_token(invalid_token)
 
         assert respose_token == expected
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     'token, repository_state_factory, expected_token, expected_id', (
         pytest.param(
@@ -223,15 +232,15 @@ class TestGetToken:
         ),
     ),
 )
-def test_update_token(
+async def test_update_token(
     token, repository_state_factory, expected_token, expected_id, request,
 ):
     """Тетстирует обновление токена."""
-    repository, _ = request.getfixturevalue(
+    repository, _ = await request.getfixturevalue(
         repository_state_factory,
     )
 
-    respose_token: Token = repository.update_token(token)
+    respose_token: Token = await repository.update_token(token)
 
     if respose_token is None:
         raise AssertionError

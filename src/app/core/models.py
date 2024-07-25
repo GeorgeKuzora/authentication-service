@@ -81,7 +81,7 @@ class Token(BaseModel):
         :rtype: bool
         :raises ValidationError: Если тип переданного значения не верен
         """
-        if not isinstance(self, Self):
+        if not isinstance(self, self.__class__):
             token_type = type(token)
             logger.error(f'expected Token but received {token_type}')
             raise ValidationError(f'expected Token but received {token_type}')
@@ -113,5 +113,3 @@ class UserCredentials(BaseModel):
         max_length=validation_rules.username_max_len,
         min_length=validation_rules.password_min_len,
     )
-
-

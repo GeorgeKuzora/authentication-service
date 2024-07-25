@@ -1,7 +1,7 @@
 from datetime import datetime
-from unittest.mock import MagicMock
 
 import pytest
+from unittest.mock import AsyncMock
 
 from app.core.authentication import AuthService, Token, User
 from app.core.errors import RepositoryError
@@ -10,15 +10,27 @@ from app.external.in_memory_repository import InMemoryRepository
 issued_at = datetime.now()
 encoded_token = 'sdfa.asfsd.safd'  # noqa: S105 test encoded token
 user_list = [
-    User('peter', '13rasf', 1),
-    User('max', 'sdfad', 2),
+    User(username='peter', password_hash='13rasf', user_id=1),  # noqa: S106, E501 tests
+    User(username='max', password_hash='sdfad', user_id=2),  # noqa: S106, E501 tests
 ]
 token_list = [
-    Token(user_list[0], issued_at, encoded_token, 1),
-    Token(user_list[1], issued_at, encoded_token, 2),
+    Token(
+        subject='peter',
+        issued_at=issued_at,
+        encoded_token=encoded_token,
+        token_id=1,
+    ),
+    Token(
+        subject='max',
+        issued_at=issued_at,
+        encoded_token=encoded_token,
+        token_id=2,
+    ),
 ]
-invalid_user = User('invalid', 'invalid')
-invalid_token = Token(invalid_user, datetime.now(), 'sdfa')
+invalid_user = User(username='invalid', password_hash='invalid')  # noqa: S106, E501 tests
+invalid_token = Token(  # noqa: S106 tests
+    subject='invalid', issued_at=datetime.now(), encoded_token='sdfa',
+)
 
 
 @pytest.fixture
@@ -31,12 +43,14 @@ def service():
     :return: экземпляр сервиса
     :rtype: AuthService
     """
-    repository = MagicMock()
-    config = MagicMock()
-    config.algorithm = 'HS256'  # noqa: S105 test algorithm name
-    config.secret_key = '09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b89e8d3e7'  # noqa: S105, E501 test secret key
+    repository = AsyncMock()
+    config = AsyncMock()
+    cache = AsyncMock()
+    queue = AsyncMock()
 
-    return AuthService(repository=repository, config=config)
+    return AuthService(
+        repository=repository, config=config, cache=cache, queue=queue,
+    )
 
 
 @pytest.fixture
@@ -50,35 +64,39 @@ def raise_repository_error(*args, **kwargs):
     raise RepositoryError
 
 
+@pytest.mark.asyncio
 @pytest.fixture
-def single_user_in_repo_facrory(repository):
+async def single_user_in_repo_facrory(repository):
     """Фикстура репозитория с одной записью о пользователе."""
     users_in_repo = 1
-    repository.create_user(user_list[0])
+    await repository.create_user(user_list[0])
     return repository, users_in_repo
 
 
+@pytest.mark.asyncio
 @pytest.fixture
-def two_users_in_repo_facrory(repository):
+async def two_users_in_repo_facrory(repository):
     """Фикстура репозитория с двумя записями о пользователях."""
     users_in_repo = 2
     for user_id in range(users_in_repo):
-        repository.create_user(user_list[user_id])
+        await repository.create_user(user_list[user_id])
     return repository, users_in_repo
 
 
+@pytest.mark.asyncio
 @pytest.fixture
-def single_token_in_repo_facrory(repository):
+async def single_token_in_repo_facrory(repository):
     """Фикстура репозитория с одной записью о токене."""
     tokens_in_repo = 1
-    repository.create_token(token_list[0])
+    await repository.create_token(token_list[0])
     return repository, tokens_in_repo
 
 
+@pytest.mark.asyncio
 @pytest.fixture
-def two_tokens_in_repo_facrory(repository):
+async def two_tokens_in_repo_facrory(repository):
     """Фикстура репозитория с двумя записями о токенах."""
     tokens_in_repo = 2
     for token_id in range(tokens_in_repo):
-        repository.create_token(token_list[token_id])
+        await repository.create_token(token_list[token_id])
     return repository, tokens_in_repo

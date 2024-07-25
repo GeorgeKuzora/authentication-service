@@ -26,7 +26,7 @@ class InMemoryRepository:
         self.tokens: list[Token] = []
         self.tokens_count: int = 0
 
-    def create_user(self, user: User) -> User:
+    async def create_user(self, user: User) -> User:
         """
         Создает пользователя в базе данных.
 
@@ -48,7 +48,7 @@ class InMemoryRepository:
         logger.info(f'Created user {indexed_user}')
         return indexed_user
 
-    def create_token(self, token: Token) -> Token:
+    async def create_token(self, token: Token) -> Token:
         """
         Создает токен в базе данных.
 
@@ -71,7 +71,7 @@ class InMemoryRepository:
         logger.info(f'Created token {indexed_token}')
         return indexed_token
 
-    def get_user(self, user: User) -> User | None:
+    async def get_user(self, user: User) -> User | None:
         """
         Получает пользователя из базы данных.
 
@@ -95,7 +95,7 @@ class InMemoryRepository:
         logger.info(f'got {in_db_user}')
         return in_db_user
 
-    def get_token(self, user: User) -> Token | None:
+    async def get_token(self, user: User) -> Token | None:
         """
         Получает токен пользователя из базы данных.
 
@@ -109,7 +109,7 @@ class InMemoryRepository:
         try:
             token = [
                 member for member in self.tokens if (
-                    member.subject.user_id == user.user_id
+                    member.subject == user.username
                 )
             ][0]
         except IndexError:
@@ -119,7 +119,7 @@ class InMemoryRepository:
         logger.info(f'got {token}')
         return token
 
-    def update_token(self, token: Token) -> Token:
+    async def update_token(self, token: Token) -> Token:
         """
         Обновляет токен пользователя из базы данных.
 
@@ -130,12 +130,36 @@ class InMemoryRepository:
         :return: индексированная запись о токене пользователя.
         :rtype: Token
         """
-        token_in_db = self.get_token(token.subject)
+        token_in_db = await self._get_token(token.subject)
         if token_in_db is None:
-            token_in_db = self.create_token(token)
+            token_in_db = await self.create_token(token)
 
         token_position = self.tokens.index(token_in_db)
         token.token_id = token_in_db.token_id
         self.tokens[token_position] = token
         logger.info(f'Updated {token}')
+        return token
+
+    async def _get_token(self, username: str) -> Token | None:
+        """
+        Получает токен пользователя из базы данных.
+
+        Получает и возвращает запись о токене пользователя из базы данных.
+
+        :param username: Имя пользователя
+        :type username: str
+        :return: индексированная запись о токене  пользователе.
+        :rtype: Token
+        """
+        try:
+            token = [
+                member for member in self.tokens if (
+                    member.subject == username
+                )
+            ][0]
+        except IndexError:
+            logger.warning(f'token for {username} is not found')
+            return None
+
+        logger.info(f'got {token}')
         return token
