@@ -27,7 +27,6 @@ def get_service() -> AuthService:
     )
 
 
-@app.post('/auth')
 async def authenticate(
     user_creds: UserCredentials,
     authorization: Annotated[str, Header()],
@@ -38,26 +37,25 @@ async def authenticate(
     try:
         return await task
     except NotFoundError as not_found_err:
-        logger.info(f'user {user_creds.username} not found')
+        logger.info(f'{user_creds.username} not found')
         raise HTTPException(
             status_code=status.HTTP_404,
-            detail=f'user {user_creds.username} not found',
+            detail=f'{user_creds.username} not found',
         ) from not_found_err
     except AuthorizationError as auth_err:
-        logger.info(f'user {user_creds.username} unauthorized')
+        logger.info(f'{user_creds.username} unauthorized')
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f'user {user_creds.username} unauthorized',
+            detail=f'{user_creds.username} unauthorized',
         ) from auth_err
     except Exception as err:
-        logger.info('server error')
+        logger.info('server error in /authenticate')
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail='server error',
         ) from err
 
 
-@app.post('/register')
+@app.post('/register')  # type: ignore
 async def register(user_creds: UserCredentials) -> Token:
     """Хэндлер регистрации пользователя."""
     service = get_service()
@@ -65,43 +63,39 @@ async def register(user_creds: UserCredentials) -> Token:
     try:
         return await task
     except Exception as err:
-        logger.info('unexpected server error')
+        logger.error('unexpected server error in /register')
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail='unexpected server error',
         ) from err
 
 
-@app.post('/check_token')
+@app.post('/check_token')  # type: ignore
 async def check_token(
-    self, authorization: Annotated[str, Header()],
+    authorization: Annotated[str, Header()],
 ) -> dict[str, str]:
     """Хэндлер валидации токена пользователя."""
     service = get_service()
     task = asyncio.create_task(service.check_token(authorization))
     try:
-        return await task
+        return await task  # type: ignore
     except NotFoundError as not_found_err:
-        logger.info('token not found')
+        logger.info('token not found error in /check_token')
         raise HTTPException(
             status_code=status.HTTP_404,
-            detail='token not found',
         ) from not_found_err
     except AuthorizationError as auth_err:
-        logger.info('token expired')
+        logger.info('authorisation error in /check_token')
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='token expired',
         ) from auth_err
     except Exception as err:
-        logger.info('server error')
+        logger.error('server error in /check_token')
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail='server error',
         ) from err
 
 
-@app.post('/verify')
+@app.post('/verify')  # type: ignore
 async def verify(
     user_creds: UserCredentials,
     image: UploadFile,

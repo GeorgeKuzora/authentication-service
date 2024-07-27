@@ -10,5 +10,5 @@ class KafkaQueue:
 
     async def send_message(self, username: str, image: UploadFile) -> None:
         """Функция для отправки сообщения в kafka."""
-        data_uuid = user_id + str(image)  # заглушка
+        data_uuid = username + str(image)  # заглушка
         logger.debug(data_uuid)

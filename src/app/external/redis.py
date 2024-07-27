@@ -1,4 +1,3 @@
-from app.core.authentication import Hash
 from app.core.models import Token
 
 
@@ -7,31 +6,30 @@ class TokenCache:
 
     def __init__(self) -> None:
         """Метод инициализации."""
-        self.hash = Hash()
-        self.storage = {}
+        self.storage: dict[str, Token] = {}
 
-    async def get_cache(self, cached_value: Token) -> Token:
+    async def get_cache(self, cache_value: Token) -> Token:
         """
         Получает значение из кэша.
 
-        :param cached_value: Кэшированное значение
-        :type cached_value: Token
+        :param cache_value: Кэшированное значение
+        :type cache_value: Token
         :return: Кэшированное значение
         :rtype: Token
         :raises KeyError: Значение не найдено в кэше
         """
-        key = self.hash.get(str(cached_value))
-        token = self.storage.get(key)
-        if token:
-            return token
-        raise KeyError(f'{cached_value} not found')
+        key = cache_value.encoded_token
+        token_value = self.storage.get(key)
+        if token_value:
+            return token_value
+        raise KeyError(f'{cache_value} not found')
 
-    async def create_cache(self, cached_value: Token) -> None:
+    async def create_cache(self, cache_value: Token) -> None:
         """
         Записывает значение в кэш.
 
-        :param cached_value: Кэшируемое значение
-        :type cached_value: Token
+        :param cache_value: Кэшируемое значение
+        :type cache_value: Token
         """
-        key = self.hash.get(str(cached_value))
-        self.storage[key] = cached_value
+        key = cache_value.encoded_token
+        self.storage[key] = cache_value

@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from dataclasses import dataclass
 from datetime import datetime
@@ -22,7 +23,7 @@ class Repository(Protocol):
     Служит для уменьшения связности компонентов сервиса.
     """
 
-    def create_user(self, user: User) -> User:
+    async def create_user(self, user: User) -> User:
         """
         Абстрактный метод создания пользователя.
 
@@ -31,7 +32,7 @@ class Repository(Protocol):
         """
         ...  # noqa: WPS428 default Protocol syntax
 
-    def create_token(self, token: Token) -> Token:
+    async def create_token(self, token: Token) -> Token:
         """
         Абстрактный метод создания токена.
 
@@ -40,7 +41,7 @@ class Repository(Protocol):
         """
         ...  # noqa: WPS428 default Protocol syntax
 
-    def get_user(self, user: User) -> User | None:
+    async def get_user(self, user: User) -> User | None:
         """
         Абстрактный метод получения токена.
 
@@ -49,7 +50,7 @@ class Repository(Protocol):
         """
         ...  # noqa: WPS428 default Protocol syntax
 
-    def get_token(self, user: User) -> Token | None:
+    async def get_token(self, user: User) -> Token | None:
         """
         Абстрактный метод получения токена.
 
@@ -58,7 +59,7 @@ class Repository(Protocol):
         """
         ...  # noqa: WPS428 default Protocol syntax
 
-    def update_token(self, token: Token) -> Token:
+    async def update_token(self, token: Token) -> Token:
         """
         Абстрактный метод обновления токена.
 
@@ -71,21 +72,21 @@ class Repository(Protocol):
 class Cache(Protocol):
     """Интерфейс кэша сервиса."""
 
-    async def get_cache(self, cached_value: Any) -> Any:
+    async def get_cache(self, cache_value: Any) -> Any:
         """
         Получает значение из кэша.
 
-        :param cached_value: Кэшированное значение
-        :type cached_value: Any
+        :param cache_value: Кэшированное значение
+        :type cache_value: Any
         """
         ...  # noqa: WPS428 valid protocol syntax
 
-    async def create_cache(self, cached_value: Any) -> None:
+    async def create_cache(self, cache_value: Any) -> None:
         """
         Записывает значение в кэш.
 
-        :param cached_value: Кэшируемое значение
-        :type cached_value: Any
+        :param cache_value: Кэшируемое значение
+        :type cache_value: Any
         """
         ...  # noqa: WPS428 valid protocol syntax
 
@@ -183,7 +184,7 @@ class JWTEncoder:
         decoded_token = jwt.decode(
             jwt=encoded_token,
             key=self.config.secret_key,
-            algorithm=self.config.algorithm,
+            algorithms=[self.config.algorithm],
         )
         return Token(
             subject=decoded_token.get('sub'),
@@ -239,7 +240,8 @@ class AuthService:
         """
         password_hash = self.hash.get(user_creds.password)
         user = User(username=user_creds.username, password_hash=password_hash)
-        user = self.repository.create_user(user)
+        task = asyncio.create_task(self.repository.create_user(user))
+        user = await task
         token = self.encoder.encode(user)
         await self.cache.create_cache(token)
         return token
@@ -263,22 +265,25 @@ class AuthService:
         :raises NotFoundError: Если пользователь не найден
         :raises AuthorizationError: При провале авторизации
         """
-        password_hash = self.hash.get(user_creds.password)
-        user = User(username=user_creds.username, password_hash=password_hash)
-        user_in_db = self.repository.get_user(user)
+        user = User(
+            username=user_creds.username,
+            password_hash=self.hash.get(user_creds.password),
+        )
+        task = asyncio.create_task(self.repository.get_user(user))
+        user = await task
 
-        if user_in_db is None:
-            logger.info(f'user {user_creds.username} not found in db')
-            raise NotFoundError(f'user {user_creds.username} not found in db')
+        if user is None:
+            logger.info(f'{user_creds.username} not found in db')
+            raise NotFoundError(f'{user_creds.username} not found in db')
 
         if not self.hash.validate(  # noqa: WPS337 one condition
-            user_creds.password, user_in_db.password_hash,
+            user_creds.password, user.password_hash,
         ):
             logger.info(
-                f'user {user_creds.username} failed password verification',
+                f'{user_creds.username} failed password verification',
             )
             raise AuthorizationError(
-                f'user {user_creds.username} failed password verification',
+                f'{user_creds.username} failed password verification',
             )
 
         token_value = authorization.split(maxsplit=1)[1]
@@ -341,7 +346,5 @@ class AuthService:
         :type user_creds: UserCredentials
         :param image: изображение пользователя
         :type image: UploadFile
-        :return: Сообщение об успехе.
-        :rtype: dict[str, str]
         """
         await self.queue.send_message(user_creds.username, image)

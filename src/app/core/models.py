@@ -1,9 +1,9 @@
 import logging
 from collections import namedtuple
 from datetime import datetime, timedelta
-from typing import Self
+from typing import Any
 
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
@@ -36,24 +36,23 @@ class User(BaseModel):
     password_hash: str
     user_id: int | None = None
 
-    def __eq__(self, user: Self) -> bool:
+    def __eq__(self, object: Any) -> bool:  # noqa: WPS125, E501 magic method signature
         """
         Метод сравнения двух объектов.
 
-        :param user: объект для сравнения
-        :type: object
+        :param object: объект для сравнения
+        :type object: Any
         :return: логическое значение равны ли объекты
         :rtype: bool
-        :raises ValidationError: Если тип переданного значения не верен
         """
-        if not isinstance(self, Self):
-            user_type = type(user)
-            logger.error(f'expected User but received {user_type}')
-            raise ValidationError(f'expected User but received {user_type}')
-        return (
-            self.username == user.username and
-            self.password_hash == user.password_hash
+        not_equal = False
+        if not isinstance(self, self.__class__):
+            return not_equal
+        equal: bool = (
+            self.username == object.username and
+            self.password_hash == object.password_hash
         )
+        return equal  # noqa: WPS331 MyPy suggestion
 
 
 class Token(BaseModel):
@@ -71,25 +70,24 @@ class Token(BaseModel):
     encoded_token: str
     token_id: int | None = None
 
-    def __eq__(self, token: Self) -> bool:
+    def __eq__(self, object: Any) -> bool:  # noqa: WPS125, E501 magic method signature
         """
         Метод сравнения двух объектов.
 
-        :param token: объект для сравнения
-        :type: Self
+        :param object: объект для сравнения
+        :type object: Self
         :return: логическое значение равны ли объекты
         :rtype: bool
-        :raises ValidationError: Если тип переданного значения не верен
         """
+        not_equal = False
         if not isinstance(self, self.__class__):
-            token_type = type(token)
-            logger.error(f'expected Token but received {token_type}')
-            raise ValidationError(f'expected Token but received {token_type}')
-        return (
-            self.subject == token.subject and
-            self.issued_at == token.issued_at and
-            self.encoded_token == token.encoded_token
+            return not_equal
+        equal: bool = (
+            self.subject == object.subject and
+            self.issued_at == object.issued_at and
+            self.encoded_token == object.encoded_token
         )
+        return equal  # noqa: WPS331 MyPy suggestion
 
     def __str__(self) -> str:
         """Метод получения представления объекта в виде строки."""
