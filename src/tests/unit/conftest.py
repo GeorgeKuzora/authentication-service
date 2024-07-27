@@ -1,10 +1,10 @@
 from datetime import datetime
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from unittest.mock import AsyncMock
 
 from app.core.authentication import AuthService, Token, User
-from app.core.errors import RepositoryError
+from app.core.config import AuthConfig
 from app.external.in_memory_repository import InMemoryRepository
 
 issued_at = datetime.now()
@@ -43,25 +43,38 @@ def service():
     :return: экземпляр сервиса
     :rtype: AuthService
     """
-    repository = AsyncMock()
-    config = AsyncMock()
+    repository = AsyncMock(InMemoryRepository)
     cache = AsyncMock()
     queue = AsyncMock()
-
+    config = AsyncMock(AuthConfig)
+    config.algorithm = 'HS256'
+    config.secret_key = '09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7'  # noqa: S105, E501 test value
     return AuthService(
         repository=repository, config=config, cache=cache, queue=queue,
     )
 
 
 @pytest.fixture
+def srv_encoder_mock(service):
+    """
+    Фикстура создает экземпляр сервиса.
+
+    Атрибут сервиса encoder является mock объектом.
+
+    :param service: Сервис
+    :type service: AuthService
+    :return: экземпляр сервиса
+    :rtype: AuthService
+    """
+    encoder = MagicMock()
+    service.encoder = encoder
+    return service
+
+
+@pytest.fixture
 def repository():
     """Фикстура для создания объекта InMemoryRepository."""
     return InMemoryRepository()
-
-
-def raise_repository_error(*args, **kwargs):
-    """Функция для вызова RepositoryError."""
-    raise RepositoryError
 
 
 @pytest.mark.asyncio
