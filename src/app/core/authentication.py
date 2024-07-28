@@ -1,75 +1,18 @@
+import asyncio
 import logging
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Protocol, Self
+from typing import Annotated, Any, Protocol
 
 import jwt
+from fastapi import Header, UploadFile
 from passlib.context import CryptContext
 
 from app.core.config import AuthConfig
+from app.core.errors import AuthorizationError, NotFoundError
+from app.core.models import Token, User, UserCredentials
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass
-class User:
-    """
-    Данные о пользователе.
-
-    Attributes:
-        username: str - имя пользователя
-        password_hash: str - хэш пароля пользователя
-    """
-
-    username: str
-    password_hash: str
-    user_id: int | None = None
-
-    def __eq__(self, user: Self) -> bool:
-        """
-        Метод сравнения двух объектов.
-
-        :param user: объект для сравнения
-        :type: Self
-        :return: логическое значение равны ли объекты
-        :rtype: bool
-        """
-        return (
-            self.username == user.username and
-            self.password_hash == user.password_hash
-        )
-
-
-@dataclass
-class Token:
-    """
-    Данные о токене.
-
-    Attributes:
-        subject: User - пользовать для которого создан токен
-        issued_at: datetime - дата и время создания токена
-        encoded_token: str - кодированное представление токена
-    """
-
-    subject: User
-    issued_at: datetime
-    encoded_token: str
-    token_id: int | None = None
-
-    def __eq__(self, token: Self) -> bool:
-        """
-        Метод сравнения двух объектов.
-
-        :param token: объект для сравнения
-        :type: Self
-        :return: логическое значение равны ли объекты
-        :rtype: bool
-        """
-        return (
-            self.subject == token.subject and
-            self.issued_at == token.issued_at and
-            self.encoded_token == token.encoded_token
-        )
 
 
 class Repository(Protocol):
@@ -80,7 +23,7 @@ class Repository(Protocol):
     Служит для уменьшения связности компонентов сервиса.
     """
 
-    def create_user(self, user: User) -> User:
+    async def create_user(self, user: User) -> User:
         """
         Абстрактный метод создания пользователя.
 
@@ -89,7 +32,7 @@ class Repository(Protocol):
         """
         ...  # noqa: WPS428 default Protocol syntax
 
-    def create_token(self, token: Token) -> Token:
+    async def create_token(self, token: Token) -> Token:
         """
         Абстрактный метод создания токена.
 
@@ -98,7 +41,7 @@ class Repository(Protocol):
         """
         ...  # noqa: WPS428 default Protocol syntax
 
-    def get_user(self, user: User) -> User | None:
+    async def get_user(self, user: User) -> User | None:
         """
         Абстрактный метод получения токена.
 
@@ -107,7 +50,7 @@ class Repository(Protocol):
         """
         ...  # noqa: WPS428 default Protocol syntax
 
-    def get_token(self, user: User) -> Token | None:
+    async def get_token(self, user: User) -> Token | None:
         """
         Абстрактный метод получения токена.
 
@@ -116,7 +59,7 @@ class Repository(Protocol):
         """
         ...  # noqa: WPS428 default Protocol syntax
 
-    def update_token(self, token: Token) -> Token:
+    async def update_token(self, token: Token) -> Token:
         """
         Абстрактный метод обновления токена.
 
@@ -124,6 +67,43 @@ class Repository(Protocol):
         :type token: Token
         """
         ...  # noqa: WPS428 default Protocol syntax
+
+
+class Cache(Protocol):
+    """Интерфейс кэша сервиса."""
+
+    async def get_cache(self, cache_value: Any) -> Any:
+        """
+        Получает значение из кэша.
+
+        :param cache_value: Кэшированное значение
+        :type cache_value: Any
+        """
+        ...  # noqa: WPS428 valid protocol syntax
+
+    async def create_cache(self, cache_value: Any) -> None:
+        """
+        Записывает значение в кэш.
+
+        :param cache_value: Кэшируемое значение
+        :type cache_value: Any
+        """
+        ...  # noqa: WPS428 valid protocol syntax
+
+
+class Queue(Protocol):
+    """Интерфейс кэша сервиса."""
+
+    async def send_message(self, username: str, image: UploadFile) -> None:
+        """
+        Отправляет сообщение с файлом.
+
+        :param username: имя пользователя
+        :type username: str
+        :param image: изображение пользователя
+        :type image: UploadFile
+        """
+        ...  # noqa: WPS428 valid protocol syntax
 
 
 @dataclass
@@ -187,7 +167,29 @@ class JWTEncoder:
             algorithm=self.config.algorithm,
         )
         return Token(
-            subject=user, issued_at=issued_at, encoded_token=encoded_token,
+            subject=user.username,
+            issued_at=issued_at,
+            encoded_token=encoded_token,
+        )
+
+    def decode(self, encoded_token: str) -> Token:
+        """
+        Метод декодирования токена.
+
+        :param encoded_token: jwt токен в закодированом виде
+        :type encoded_token: str
+        :return: токен пользователя
+        :rtype: Token
+        """
+        decoded_token = jwt.decode(
+            jwt=encoded_token,
+            key=self.config.secret_key,
+            algorithms=[self.config.algorithm],
+        )
+        return Token(
+            subject=decoded_token.get('sub'),
+            issued_at=decoded_token.get('iat'),
+            encoded_token=encoded_token,
         )
 
 
@@ -197,15 +199,15 @@ class AuthService:
 
     Сервис позволяет проводить регистрацию и аутентификацию
     пользоватей. Создает JWT токен.
-
-    Attributes:
-        repository: Repository - хранилище данных.
-        _token_encoding_algotithm: str - алгоритм кодирования токена.
-        _secret_key: str - ключ для кодирования токена.
-        _pwd_context: CryptContext - контекст для хэширования пароля.
     """
 
-    def __init__(self, repository: Repository, config: AuthConfig) -> None:
+    def __init__(
+        self,
+        repository: Repository,
+        config: AuthConfig,
+        cache: Cache,
+        queue: Queue,
+    ) -> None:
         """
         Функция инициализации.
 
@@ -213,67 +215,136 @@ class AuthService:
         :type repository: Repository
         :param config: данные конфигурации сервиса
         :type config: AuthConfig
+        :param cache: Кэш сервиса
+        :type cache: Cache
+        :param queue: Очередь сообщений сервиса
+        :type queue: Queue
         """
         self.repository = repository
         self.encoder = JWTEncoder(config)
         self.hash = Hash()
+        self.cache = cache
+        self.queue = queue
 
-    def register(self, username: str, password: str) -> Token | None:
+    async def register(self, user_creds: UserCredentials) -> Token:
         """
         Регистрирует пользователя и возвращает токен.
 
         Регистрирует и сохраняет пользователя в базе данных.
         Создает и возвращает токен для зарегистрированного пользователя.
 
-        :param username: имя пользователя.
-        :type username: str
-        :param password: пароль пользователя.
-        :type password: str
+        :param user_creds: Данные пользователя
+        :type user_creds: UserCredentials
         :return: JWT токен пользователя.
         :rtype: Token, None
         """
-        password_hash = self.hash.get(password)
-        user = User(username=username, password_hash=password_hash)
-        user = self.repository.create_user(user)
+        password_hash = self.hash.get(user_creds.password)
+        user = User(username=user_creds.username, password_hash=password_hash)
+        task = asyncio.create_task(self.repository.create_user(user))
+        user = await task
         token = self.encoder.encode(user)
-        return self.repository.create_token(token)
+        await self.cache.create_cache(token)
+        return token
 
-    def authenticate(self, username: str, password: str) -> Token | None:
+    async def authenticate(
+        self,
+        user_creds: UserCredentials,
+        authorization: Annotated[str, Header()],
+    ) -> Token:
         """
         Аутентифицирует пользователя и возвращает токен.
 
         Аутентифицирует пользователя и проверяет наличие токена.
-        Если токена нет создает и возвращает токен пользователя.
-        Если токен есть обновляет и возвращает токен пользователя.
-        Если пользователь не найден либо данные пользователя неверны,
-        возвращает None.
 
-        :param username: имя пользователя.
-        :type username: str
-        :param password: пароль пользователя.
-        :type password: str
+        :param user_creds: Данные пользователя
+        :type user_creds: UserCredentials
+        :param authorization: Заголовок авторизации
+        :type authorization: Annotated[str, Header()
         :return: JWT токен пользователя.
         :rtype: Token, None
+        :raises NotFoundError: Если пользователь не найден
+        :raises AuthorizationError: При провале авторизации
         """
-        password_hash = self.hash.get(password)
-        user = User(username=username, password_hash=password_hash)
-        user_in_db = self.repository.get_user(user)
+        user = User(
+            username=user_creds.username,
+            password_hash=self.hash.get(user_creds.password),
+        )
+        task = asyncio.create_task(self.repository.get_user(user))
+        user = await task
 
-        if user_in_db is None:
-            logger.info(f'user {username} not found in db')
-            return None
+        if user is None:
+            logger.info(f'{user_creds.username} not found in db')
+            raise NotFoundError(f'{user_creds.username} not found in db')
 
         if not self.hash.validate(  # noqa: WPS337 one condition
-            password, user_in_db.password_hash,
+            user_creds.password, user.password_hash,
         ):
-            logger.info(f'user {username} failed password verification')
-            return None
+            logger.info(
+                f'{user_creds.username} failed password verification',
+            )
+            raise AuthorizationError(
+                f'{user_creds.username} failed password verification',
+            )
 
-        token = self.repository.get_token(user)
-        if token is None:
+        token_value = authorization.split(maxsplit=1)[1]
+        token_value_decoded = self.encoder.decode(token_value)
+        try:
+            token = await self.cache.get_cache(token_value_decoded)
+        except KeyError:
+            logger.info(f'token cache not found for user {user}')
+            token = None
+
+        if token is None or token.is_expired():
             token = self.encoder.encode(user)
-            token = self.repository.create_token(token)
-        else:
-            token = self.encoder.encode(user)
-            token = self.repository.update_token(token)
+            await self.cache.create_cache(token)
         return token
+
+    async def check_token(
+        self, authorization: Annotated[str, Header()],
+    ) -> dict[str, str]:
+        """
+        Валидирует токен пользователя.
+
+        :param authorization: Заголовок авторизации
+        :type authorization: Annotated[str, Header()
+        :return: Сообщение об успехе.
+        :rtype: dict[str, str]
+        :raises NotFoundError: Токен не найден
+        :raises AuthorizationError: Срок действия токена вышел
+        """
+        token_value = authorization.split(maxsplit=1)[1]
+        token_value_decoded = self.encoder.decode(token_value)
+        try:
+            token: Token = await self.cache.get_cache(token_value_decoded)
+        except KeyError:
+            logger.info(
+                f'token cache not found for user {token_value_decoded.subject}',
+            )
+            raise NotFoundError(
+                f'token cache not found for user {token_value_decoded.subject}',
+            )
+
+        if token.is_expired():
+            logger.info(
+                f'token is expired for user {token.subject}',
+            )
+            raise AuthorizationError(
+                f'token is expired for user {token.subject}',
+            )
+        return {'message': 'ok'}
+
+    async def verify(
+        self, user_creds: UserCredentials, image: UploadFile,
+    ) -> None:
+        """
+        Верифицирует пользователя.
+
+        Отправляет сообщение с именим пользователя и изображением
+        пользователя в очередь сообщений.
+
+        :param user_creds: Данные пользователя
+        :type user_creds: UserCredentials
+        :param image: изображение пользователя
+        :type image: UploadFile
+        """
+        await self.queue.send_message(user_creds.username, image)

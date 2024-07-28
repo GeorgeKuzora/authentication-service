@@ -1,26 +1,11 @@
 from collections import namedtuple
+from datetime import datetime
 
 import pytest
 
 from app.core.authentication import AuthService, Token, User
-from app.core.config import get_auth_config
-from app.external.in_memory_repository import InMemoryRepository
-
-
-@pytest.fixture
-def service():
-    """
-    Фикстура создает экземпляр сервиса.
-
-    Атрибуты сервиса repository, config являются реальными объектами.
-
-    :return: экземпляр сервиса
-    :rtype: AuthService
-    """
-    config = get_auth_config()
-    repository = InMemoryRepository()
-    return AuthService(repository=repository, config=config)
-
+from app.core.errors import AuthorizationError, NotFoundError
+from app.core.models import UserCredentials
 
 TestUser = namedtuple('TestUser', 'username, password')
 
@@ -31,35 +16,37 @@ test_user2 = TestUser('peter', 'password_2')
 class TestRegister:
     """Тестирует метод register."""
 
-    register_fields = 'username, password'
+    register_fields = 'user_creds'
 
+    @pytest.mark.asyncio
     @pytest.mark.parametrize(
         register_fields, (
             pytest.param(
-                test_user1.username,
-                test_user1.password,
+                UserCredentials(
+                    username=test_user1.username,
+                    password=test_user1.password,
+                ),
                 id='valid user 1',
             ),
             pytest.param(
-                test_user2.username,
-                test_user2.password,
+                UserCredentials(
+                    username=test_user2.username,
+                    password=test_user2.password,
+                ),
                 id='valid user 2',
             ),
         ),
     )
-    def test_register(
-        self, username, password, service: AuthService,
+    async def test_register(
+        self, user_creds, service: AuthService,
     ):
         """Тестирует метод register."""
-        token = service.register(username, password)
+        token = await service.register(user_creds)
 
         if token is not None:
-            assert token.subject.username == username
+            assert token.subject == user_creds.username
             assert token.encoded_token
             assert token.issued_at
-            assert service.hash.validate(
-                password, token.subject.password_hash,
-            )
         else:
             raise AssertionError()
 
@@ -70,32 +57,116 @@ class TestAuthenticate:
     is_not_none = False
     is_none = True
 
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        'user_creds, service_state_factory', (
+            pytest.param(
+                UserCredentials(
+                    username=test_user1.username,
+                    password=test_user1.password,
+                ),
+                'service_db_user_yes_token_no',
+                id='user in db without token',
+            ),
+            pytest.param(
+                UserCredentials(
+                    username=test_user1.username,
+                    password=test_user1.password,
+                ),
+                'service_db_user_yes_token_yes',
+                id='user in db with token',
+            ),
+        ),
+    )
+    async def test_authenticate(
+        self,
+        user_creds,
+        service_state_factory,
+        request,
+    ):
+        """Тестирует метод authenticate."""
+        factory = request.getfixturevalue(service_state_factory)
+        srv: AuthService = await factory(
+            user_creds.username, user_creds.password,
+        )
+        token_value = srv.encoder.encode(
+            User(
+                username=test_user1.username,
+                password_hash=srv.hash.get(user_creds.password),
+                user_id=1,
+            ),
+        )
+        auth_header = f'Bearer {token_value.encoded_token}'
+
+        token: Token | None = await srv.authenticate(
+            user_creds, auth_header,
+        )
+
+        assert token is not None
+        assert token.subject == user_creds.username
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        'user_creds, service_state_factory, expected_error', (
+            pytest.param(
+                UserCredentials(
+                    username=test_user1.username,
+                    password=test_user1.password,
+                ),
+                'service_db_user_not_in_db',
+                NotFoundError,
+                id='user not in db',
+            ),
+            pytest.param(
+                UserCredentials(
+                    username=test_user1.username,
+                    password=test_user1.password,
+                ),
+                'service_db_user_with_invalid_pass',
+                AuthorizationError,
+                id='user has invalid password',
+            ),
+        ),
+    )
+    async def test_authenticate_raises(
+        self,
+        user_creds,
+        service_state_factory,
+        expected_error,
+        request,
+    ):
+        """Тестирует метод authenticate."""
+        factory = request.getfixturevalue(service_state_factory)
+        srv: AuthService = await factory(
+            user_creds.username, user_creds.password,
+        )
+        password_hash = srv.hash.get(user_creds.password)
+        token_value = srv.encoder.encode(
+            User(
+                username=test_user1.username,
+                password_hash=password_hash,
+                user_id=1,
+            ),
+        )
+        auth_header = f'Bearer {token_value.encoded_token}'
+
+        with pytest.raises(expected_error):
+            await srv.authenticate(user_creds, auth_header)
+
+
+class TestCheckToken:
+    """Тестирует метод check_token."""
+
+    user_credentials = UserCredentials(
+        username=test_user1.username,
+        password=test_user1.password,
+    )
+    is_expired = True
+    is_not_expired = False
+    expired_date = datetime(year=2024, month=1, day=1)  # noqa: WPS432 not magic
+
     @pytest.fixture
-    def service_db_user_yes_token_no(self, service: AuthService):
-        """
-        Возвращает функцию для создания сервиса.
-
-        Возвращаемая функция примает username и password
-        и создает запись о пользователе в базе данных.
-
-        :param service: экземпляр сервиса
-        :type service: AuthService
-        :return: функция создания сервиса
-        :rtype: callable
-        """
-        def _service_db_user_yes_token_no(username, password):  # noqa: WPS430, E501 need for service state parametrization
-            user_id = 1
-            user = User(
-                username,
-                service.hash.get(password),
-                user_id,
-            )
-            service.repository.create_user(user)
-            return service
-        return _service_db_user_yes_token_no
-
-    @pytest.fixture
-    def service_db_user_yes_token_yes(self, service: AuthService):
+    def service_db_token_found(self, service: AuthService):
         """
         Возвращает функцию для создания сервиса.
 
@@ -108,111 +179,94 @@ class TestAuthenticate:
         :return: функция создания сервиса
         :rtype: callable
         """
-        def _service_db_user_yes_token_yes(username, password):  # noqa: WPS430, E501 need for service state parametrization
+        async def _service_db_token_found(username, password):  # noqa: WPS430, E501 need for service state parametrization
             user_id = 1
             user = User(
-                username,
-                service.hash.get(password),
-                user_id,
+                username=username,
+                password_hash=service.hash.get(password),
+                user_id=user_id,
             )
-            user = service.repository.create_user(user)
             token = service.encoder.encode(user)
-            service.repository.create_token(token)
-            return service
-        return _service_db_user_yes_token_yes
+            await service.cache.create_cache(token)
+            return service, token
+        return _service_db_token_found
 
     @pytest.fixture
-    def service_db_user_not_in_db(self, service: AuthService):
-        """
-        Возвращает функцию для создания сервиса.
-
-        Возвращаемая функция примает username и password.
-        Возвращаемая функция создвет сервис без записей в базе данных.
-
-        :param service: экземпляр сервиса
-        :type service: AuthService
-        :return: функция создания сервиса
-        :rtype: callable
-        """
-        def _service_db_user_not_id_db(username, password):  # noqa: WPS430, E501 need for service state parametrization
-            return service
-        return _service_db_user_not_id_db
-
-    @pytest.fixture
-    def service_db_user_with_invalid_pass(self, service: AuthService):
+    def service_db_token_not_found(self, service: AuthService):
         """
         Возвращает функцию для создания сервиса.
 
         Возвращаемая функция примает username и password,
-        создает запись о пользователе в базе данных.
-        При этом созданный пользователь имеет хэш пароля
-        не соответствующий переданному паролю.
+        создает запись о пользователе в базе данных
+        и добавляет токен для пользователя в базу данных.
 
         :param service: экземпляр сервиса
         :type service: AuthService
         :return: функция создания сервиса
         :rtype: callable
         """
-        def _service_db_user_yes_token_no(username, password):  # noqa: WPS430, E501 need for service state parametrization
+        async def _service_db_token_not_found(username, password):  # noqa: WPS430, E501 need for service state parametrization
             user_id = 1
-            invalid_password = 'invalid_password'  # noqa: S105 test pass
             user = User(
-                username,
-                service.hash.get(invalid_password),
-                user_id,
+                username=username,
+                password_hash=service.hash.get(password),
+                user_id=user_id,
             )
-            service.repository.create_user(user)
-            return service
-        return _service_db_user_yes_token_no
+            token = service.encoder.encode(user)
+            return service, token
+        return _service_db_token_not_found
 
+    @pytest.mark.asyncio
     @pytest.mark.parametrize(
-        'user, service_state_factory, token_is_none', (
+        'user_creds, service_state_and_token_factory', (
             pytest.param(
-                test_user1,
-                'service_db_user_yes_token_no',
-                is_not_none,
-                id='user in db without token',
+                user_credentials,
+                'service_db_token_found',
+                id='token found in cache',
             ),
             pytest.param(
-                test_user1,
-                'service_db_user_yes_token_yes',
-                is_not_none,
-                id='user in db with token',
-            ),
-            pytest.param(
-                test_user1,
-                'service_db_user_not_in_db',
-                is_none,
-                id='user not in db',
-            ),
-            pytest.param(
-                test_user1,
-                'service_db_user_with_invalid_pass',
-                is_none,
-                id='user has invalid password',
+                user_credentials,
+                'service_db_token_not_found',
+                id='token not found in cache',
+                marks=pytest.mark.xfail(raises=NotFoundError),
             ),
         ),
     )
-    def test_authenticate(
+    async def test_check_token(
         self,
-        user,
-        service_state_factory,
-        token_is_none,
+        user_creds,
+        service_state_and_token_factory,
         request,
     ):
-        """Тестирует метод authenticate."""
-        factory = request.getfixturevalue(service_state_factory)
-        srv: AuthService = factory(user.username, user.password)
-
-        token: Token | None = srv.authenticate(
-            user.username, user.password,
+        """Тестирует метод check_token."""
+        factory = request.getfixturevalue(service_state_and_token_factory)
+        srv, token = await factory(
+            user_creds.username, user_creds.password,
         )
+        auth_header = f'Bearer {token.encoded_token}'
 
-        if token_is_none:
-            assert token is None
-        else:
-            assert token is not None
-            assert srv.hash.validate(
-                user.password, token.subject.password_hash,
-            )
-            assert token.subject.username == user.username
+        assert await srv.check_token(auth_header)
+
+    @pytest.mark.parametrize(
+        'token, is_expired', (
+            pytest.param(
+                Token(  # noqa: S106 test value
+                    subject=test_user1.username,
+                    issued_at=datetime.now(),
+                    encoded_token='test_value',
+                ),
+                is_not_expired,
+            ),
+            pytest.param(
+                Token(  # noqa: S106 test value
+                    subject=test_user1.username,
+                    issued_at=expired_date,
+                    encoded_token='test_value',
+                ),
+                is_expired,
+            ),
+        ),
+    )
+    def test_token_is_expired(self, token: Token, is_expired):
+        """Тестирует метод is_expired."""
+        assert token.is_expired() == is_expired

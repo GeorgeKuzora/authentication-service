@@ -1,5 +1,5 @@
 {
-    "name": "Auth Service",
+    "name": "auth-service-kuzora",
     "dockerComposeFile": "docker-compose.yml",
     "service": "app",
     "workspaceFolder": "/workspace",
@@ -16,6 +16,9 @@
             "version": "3.12",
             "installTools": true,
             "toolsToInstall": ["poetry"]
+        },
+        "ghcr.io/duduribeiro/devcontainer-features/neovim:1": {
+            "version": "nightly"
         }
     },
     "remoteEnv": {
@@ -32,7 +35,9 @@
                 "redhat.vscode-yaml",
                 "tamasfe.even-better-toml",
                 "njqdev.vscode-python-typehint",
-                "vscode-icons-team.vscode-icons"
+                "vscode-icons-team.vscode-icons",
+                "ms-python.flake8",
+                "asvetliakov.vscode-neovim"
             ]
         }
     },
