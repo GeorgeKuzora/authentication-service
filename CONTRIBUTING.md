@@ -105,7 +105,7 @@ openssl rand -hex 32
 `src/` — каталог с исходным кодом проекта.
 `app/` — каталог с кодом сервиса.
 `api/` — каталог с кодом API проекта.
-`core/` — каталог с кодом бизнес логики проекта.
+`core/` — каталог с кодом бизнес логики проектаjjjjj.
 `transactions.py` — файл с реализацией сервиса аутентификации.
 `external/` — каталог с внешними зависимостями проекта.
 `in_memory_repository.py` - файл с реализацией хранилища данных в виде списков Python.
@@ -117,3 +117,29 @@ openssl rand -hex 32
 `unit/` — каталог с юнит-тестами проекта.
 `test_transactions.py` — файл с тестами сервиса транзакций.
 `test_service.py` — файл с тестом проекта.
+`Dockerfile` — файл для создания образа Docker контейнера.
+`.dockerignore` — файл для игнорирования файлов и директорий в ходе сборки Docker контейнера.
+
+## Запуск приложения в Docker контейнере
+
+Для приложения создан [Dockerfile](./Dockerfile).
+
+Для запуска приложения в Docker контейнере необходимо:
+
+Установить Docker Desktop для MacOS/Windows или просто docker для Linux. [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+
+При ручной сборке контейнера ожидается наличие файла секретов в проекте - `/app/src/config/secrets`.
+
+Выполнить команду `docker build` для сборки образа контейнера:
+
+```shell
+docker build -t auth-service:latest .
+```
+
+Для создания и запуска контейнера выполните команду `docker run`:
+
+```shell
+docker run --name auth-service -p 127.0.0.1:8083:8000 auth-service
+```
+
+Приложение будет доступно на порту `127.0.0.1:8083`.
