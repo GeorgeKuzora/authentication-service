@@ -4,7 +4,7 @@ LABEL maintainer="georgiy@kuzora.ru"
 
 ARG APP_PATH=/app \
     SOURCE_PATH=$APP_PATH/src \
-    CONFIG_DIR_PATH= $SOURCE_PATH/config
+    CONFIG_DIR_PATH=$SOURCE_PATH/config
 
 WORKDIR $APP_PATH
 
@@ -33,7 +33,7 @@ ENV PYTHONPATH=$SOURCE_PATH \
     CONFIG_PATH=$CONFIG_DIR_PATH/config-local.yml \
     SECRETS_PATH=$CONFIG_DIR_PATH/secrets
 
-COPY src .
+COPY src ./src
 
 EXPOSE 8000
 
