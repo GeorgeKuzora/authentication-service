@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from typing import Annotated
+from pydantic import ValidationError
 
 from fastapi import (
     APIRouter,
@@ -70,6 +71,11 @@ async def register(user_creds: UserCredentials) -> Token:
     task = asyncio.create_task(service.register(user_creds))
     try:
         return await task
+    except ValidationError as err:
+        logger.error(f'Unprocessable entry {user_creds}')
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        ) from err
     except Exception as err:
         logger.error('unexpected server error in /register')
         raise HTTPException(
