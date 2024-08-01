@@ -108,6 +108,6 @@ class UserCredentials(BaseModel):
     )
     password: str = Field(
         title='Пароль пользователя',
-        max_length=validation_rules.username_max_len,
+        max_length=validation_rules.password_max_len,
         min_length=validation_rules.password_min_len,
     )
