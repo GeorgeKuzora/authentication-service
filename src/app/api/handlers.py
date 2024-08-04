@@ -1,7 +1,6 @@
 import asyncio
 import logging
 from typing import Annotated
-from pydantic import ValidationError
 
 from fastapi import (
     APIRouter,
@@ -11,6 +10,7 @@ from fastapi import (
     UploadFile,
     status,
 )
+from pydantic import ValidationError
 
 from app.core.authentication import AuthService
 from app.core.config import get_auth_config
