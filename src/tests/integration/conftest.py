@@ -126,3 +126,76 @@ def service_db_user_with_invalid_pass(service: AuthService):
         await service.repository.create_user(user)
         return service
     return _service_db_user_with_invalid_pass
+
+
+@pytest.fixture
+def service_mocker(monkeypatch):
+    """
+    Мокирует app.api.handlers.service, возращает функцию мокирования.
+
+    Функция мокирования принимает объект сервиса и подменяет им
+    объект сервиса в модуле хэндлеров.
+
+    :param monkeypatch: Фикстура для патча объектов
+    :return: Функция мокирования
+    :rtype: Callable
+    """
+    def _service_mocker(service: AuthService):  # noqa: WPS430 need for params
+        monkeypatch.setattr(
+            'app.api.handlers.service',
+            service,
+        )
+    return _service_mocker
+
+
+@pytest.fixture
+def service_db_token_found(service: AuthService):
+    """
+    Возвращает функцию для создания сервиса.
+
+    Возвращаемая функция примает username и password,
+    создает запись о пользователе в базе данных
+    и добавляет токен для пользователя в базу данных.
+
+    :param service: экземпляр сервиса
+    :type service: AuthService
+    :return: функция создания сервиса
+    :rtype: callable
+    """
+    async def _service_db_token_found(username, password):  # noqa: WPS430, E501 need for service state parametrization
+        user_id = 1
+        user = User(
+            username=username,
+            password_hash=service.hash.get(password),
+            user_id=user_id,
+        )
+        token = service.encoder.encode(user)
+        await service.cache.create_cache(token)
+        return service, token
+    return _service_db_token_found
+
+
+@pytest.fixture
+def service_db_token_not_found(service: AuthService):
+    """
+    Возвращает функцию для создания сервиса.
+
+    Возвращаемая функция примает username и password,
+    создает запись о пользователе в базе данных
+    и добавляет токен для пользователя в базу данных.
+
+    :param service: экземпляр сервиса
+    :type service: AuthService
+    :return: функция создания сервиса
+    :rtype: callable
+    """
+    async def _service_db_token_not_found(username, password):  # noqa: WPS430, E501 need for service state parametrization
+        user_id = 1
+        user = User(
+            username=username,
+            password_hash=service.hash.get(password),
+            user_id=user_id,
+        )
+        token = service.encoder.encode(user)
+        return service, token
+    return _service_db_token_not_found
