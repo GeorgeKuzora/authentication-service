@@ -9,7 +9,11 @@ from fastapi import Header, UploadFile
 from passlib.context import CryptContext
 
 from app.core.config import AuthConfig
-from app.core.errors import AuthorizationError, NotFoundError
+from app.core.errors import (
+    AuthorizationError,
+    NotFoundError,
+    UnprocessableError,
+)
 from app.core.models import Token, User, UserCredentials
 
 logger = logging.getLogger(__name__)
@@ -249,7 +253,7 @@ class AuthService:
     async def authenticate(
         self,
         user_creds: UserCredentials,
-        authorization: Annotated[str, Header()],
+        authorization: str,
     ) -> Token:
         """
         Аутентифицирует пользователя и возвращает токен.
@@ -274,7 +278,7 @@ class AuthService:
 
         if user is None:
             logger.info(f'{user_creds.username} not found in db')
-            raise NotFoundError(f'{user_creds.username} not found in db')
+            raise NotFoundError(detail=f'{user_creds.username} not found in db')
 
         if not self.hash.validate(  # noqa: WPS337 one condition
             user_creds.password, user.password_hash,
@@ -283,11 +287,9 @@ class AuthService:
                 f'{user_creds.username} failed password verification',
             )
             raise AuthorizationError(
-                f'{user_creds.username} failed password verification',
+                detail=f'{user_creds.username} failed password verification',
             )
-
-        token_value = authorization.split(maxsplit=1)[1]
-        token_value_decoded = self.encoder.decode(token_value)
+        token_value_decoded = self._decode_token(authorization)
         try:
             token = await self.cache.get_cache(token_value_decoded)
         except KeyError:
@@ -312,8 +314,7 @@ class AuthService:
         :raises NotFoundError: Токен не найден
         :raises AuthorizationError: Срок действия токена вышел
         """
-        token_value = authorization.split(maxsplit=1)[1]
-        token_value_decoded = self.encoder.decode(token_value)
+        token_value_decoded = self._decode_token(authorization)
         try:
             token: Token = await self.cache.get_cache(token_value_decoded)
         except KeyError:
@@ -321,7 +322,7 @@ class AuthService:
                 f'token cache not found for user {token_value_decoded.subject}',
             )
             raise NotFoundError(
-                f'token cache not found for user {token_value_decoded.subject}',
+                detail=f'token cache not found for user {token_value_decoded.subject}',  # noqa: E501 can't make shorter
             )
 
         if token.is_expired():
@@ -329,7 +330,7 @@ class AuthService:
                 f'token is expired for user {token.subject}',
             )
             raise AuthorizationError(
-                f'token is expired for user {token.subject}',
+                detail=f'token is expired for user {token.subject}',
             )
         return {'message': 'ok'}
 
@@ -348,3 +349,21 @@ class AuthService:
         :type image: UploadFile
         """
         await self.queue.send_message(user_creds.username, image)
+
+    def _decode_token(self, token: str) -> Token:
+        try:
+            token_value = token.split(maxsplit=1)[1]
+        except IndexError:
+            logger.info(
+                'Bearer not found',
+            )
+            raise AuthorizationError(
+                detail='Bearer not found',
+            )
+        try:
+            return self.encoder.decode(token_value)
+        except Exception:
+            logger.info("can't decode token")
+            raise UnprocessableError(
+                detail='unproccessable token',
+            )
