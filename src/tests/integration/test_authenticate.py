@@ -165,57 +165,6 @@ class TestCheckToken:
     is_not_expired = False
     expired_date = datetime(year=2024, month=1, day=1)  # noqa: WPS432 not magic
 
-    @pytest.fixture
-    def service_db_token_found(self, service: AuthService):
-        """
-        Возвращает функцию для создания сервиса.
-
-        Возвращаемая функция примает username и password,
-        создает запись о пользователе в базе данных
-        и добавляет токен для пользователя в базу данных.
-
-        :param service: экземпляр сервиса
-        :type service: AuthService
-        :return: функция создания сервиса
-        :rtype: callable
-        """
-        async def _service_db_token_found(username, password):  # noqa: WPS430, E501 need for service state parametrization
-            user_id = 1
-            user = User(
-                username=username,
-                password_hash=service.hash.get(password),
-                user_id=user_id,
-            )
-            token = service.encoder.encode(user)
-            await service.cache.create_cache(token)
-            return service, token
-        return _service_db_token_found
-
-    @pytest.fixture
-    def service_db_token_not_found(self, service: AuthService):
-        """
-        Возвращает функцию для создания сервиса.
-
-        Возвращаемая функция примает username и password,
-        создает запись о пользователе в базе данных
-        и добавляет токен для пользователя в базу данных.
-
-        :param service: экземпляр сервиса
-        :type service: AuthService
-        :return: функция создания сервиса
-        :rtype: callable
-        """
-        async def _service_db_token_not_found(username, password):  # noqa: WPS430, E501 need for service state parametrization
-            user_id = 1
-            user = User(
-                username=username,
-                password_hash=service.hash.get(password),
-                user_id=user_id,
-            )
-            token = service.encoder.encode(user)
-            return service, token
-        return _service_db_token_not_found
-
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         'user_creds, service_state_and_token_factory', (
