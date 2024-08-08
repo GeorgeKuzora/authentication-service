@@ -35,13 +35,13 @@ class AuthConfigAccessData:
             logger.critical(
                 'config file path not found. Set SECRETS_PATH=',
             )
-            raise ConfigError('config file path not found')
+            raise ConfigError(detail='config file path not found')
         elif not self._is_valid_path(self.jwt_secrets_path):
             logger.critical(
                 f'config file {self.jwt_secrets_path} not found',
             )
             raise ConfigError(
-                f'config file {self.jwt_secrets_path} not found',
+                detail=f'config file {self.jwt_secrets_path} not found',
             )
 
 
@@ -82,10 +82,10 @@ class AuthConfig:
     ) -> None:
         if algorithm_value is None:
             logger.critical('token algorithm was not provided')
-            raise ConfigError('token algorithm was not provided')
+            raise ConfigError(detail='token algorithm was not provided')
         if secret_key_value is None:
             logger.critical('secret key was not provided')
-            raise ConfigError('secret key was not provided')
+            raise ConfigError(detail='secret key was not provided')
 
 
 def get_auth_config() -> AuthConfig:
@@ -103,9 +103,11 @@ def get_auth_config() -> AuthConfig:
         access_data = AuthConfigAccessData()
     except ConfigError as access_error:
         logger.critical('auth config data access failed')
-        raise ConfigError('auth config data access failed') from access_error
+        raise ConfigError(
+            detail='auth config data access failed',
+        ) from access_error
     try:
         return AuthConfig(access_data)
     except ConfigError as config_error:
         logger.critical('auth config setting failed')
-        raise ConfigError('auth config setting failed') from config_error
+        raise ConfigError(detail='auth config setting failed') from config_error
