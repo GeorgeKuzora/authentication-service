@@ -1,0 +1,5 @@
+kafka:
+  host: "kafka"
+  port: 9092
+  file_encoding: "utf-8"
+  file_compression_quality: 1
