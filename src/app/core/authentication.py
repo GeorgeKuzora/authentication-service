@@ -95,10 +95,10 @@ class Cache(Protocol):
         ...  # noqa: WPS428 valid protocol syntax
 
 
-class Queue(Protocol):
-    """Интерфейс кэша сервиса."""
+class Producer(Protocol):
+    """Интерфейс очереди сообщений сервиса."""
 
-    async def send_message(self, username: str, image: UploadFile) -> None:
+    async def upload_image(self, username: str, image: UploadFile) -> None:
         """
         Отправляет сообщение с файлом.
 
@@ -210,7 +210,7 @@ class AuthService:
         repository: Repository,
         config: AuthConfig,
         cache: Cache,
-        queue: Queue,
+        producer: Producer,
     ) -> None:
         """
         Функция инициализации.
@@ -228,7 +228,7 @@ class AuthService:
         self.encoder = JWTEncoder(config)
         self.hash = Hash()
         self.cache = cache
-        self.queue = queue
+        self.producer = producer
 
     async def register(self, user_creds: UserCredentials) -> Token:
         """
@@ -348,7 +348,7 @@ class AuthService:
         :param image: изображение пользователя
         :type image: UploadFile
         """
-        await self.queue.send_message(user_creds.username, image)
+        await self.producer.upload_image(user_creds.username, image)
 
     def _decode_token(self, token: str) -> Token:
         try:

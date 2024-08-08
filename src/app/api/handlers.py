@@ -17,7 +17,7 @@ from app.core.config import get_auth_config
 from app.core.errors import AuthorizationError, NotFoundError, ServerError
 from app.core.models import Token, UserCredentials
 from app.external.in_memory_repository import InMemoryRepository
-from app.external.kafka import KafkaQueue
+from app.external.kafka import KafkaProducer
 from app.external.redis import TokenCache
 
 logger = logging.getLogger(__name__)
@@ -30,9 +30,9 @@ def get_service() -> AuthService:
     cache = TokenCache()
     persistent = InMemoryRepository()
     config = get_auth_config()
-    queue = KafkaQueue()
+    queue = KafkaProducer()
     return AuthService(
-        repository=persistent, cache=cache, config=config, queue=queue,
+        repository=persistent, cache=cache, config=config, producer=queue,
     )
 
 

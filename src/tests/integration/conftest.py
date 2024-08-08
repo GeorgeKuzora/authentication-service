@@ -3,7 +3,7 @@ import pytest
 from app.core.authentication import AuthService, User
 from app.core.config import get_auth_config
 from app.external.in_memory_repository import InMemoryRepository
-from app.external.kafka import KafkaQueue
+from app.external.kafka import KafkaProducer
 from app.external.redis import TokenCache
 
 
@@ -20,12 +20,12 @@ def service():
     config = get_auth_config()
     repository = InMemoryRepository()
     cache = TokenCache()
-    queue = KafkaQueue()
+    queue = KafkaProducer()
     return AuthService(
         repository=repository,
         config=config,
         cache=cache,
-        queue=queue,
+        producer=queue,
     )
 
 

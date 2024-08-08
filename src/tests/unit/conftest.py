@@ -50,7 +50,7 @@ def service():
     config.algorithm = 'HS256'
     config.secret_key = '09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7'  # noqa: S105, E501 test value
     return AuthService(
-        repository=repository, config=config, cache=cache, queue=queue,
+        repository=repository, config=config, cache=cache, producer=queue,
     )
 
 
