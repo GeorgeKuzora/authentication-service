@@ -124,6 +124,7 @@ class KafkaSettings(BaseSettings):
     port: int
     file_encoding: str = 'utf-8'
     file_compression_quality: int = 1
+    storage_path: str
 
     @property
     def instance(self) -> str:
