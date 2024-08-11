@@ -62,7 +62,7 @@ class KafkaProducer:  # noqa: WPS214 for now 8 methods, will extract in future
             return True
         return False
 
-    async def serializer(self, value: dict[str, str]) -> bytes:  # noqa: WPS110, E501 should be by docs
+    def serializer(self, value: dict[str, str]) -> bytes:  # noqa: WPS110, E501 should be by docs
         """
         Сериализирует сообщение перед отправкой в kafra.
 
