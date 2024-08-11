@@ -3,9 +3,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api.handlers import router
+from app.api.handlers import router, service
 from app.api.healthz.handlers import healthz_router
-from app.external.kafka import producer
 
 logger = logging.getLogger(__name__)
 
@@ -14,10 +13,10 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Метод для определния lifespan events приложения."""
     logger.info('Starting up kafka producer...')
-    await producer.start()
+    await service.start()
     yield
     logger.info('Shutting down kafka producer...')
-    await producer.stop()
+    await service.stop()
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(router)

@@ -109,6 +109,23 @@ class Producer(Protocol):
         """
         ...  # noqa: WPS428 valid protocol syntax
 
+    async def start(self) -> None:
+        """Запускает producer."""
+        ...  # noqa: WPS428 valid protocol syntax
+
+    async def stop(self) -> None:
+        """Останавливает producer."""
+        ...  # noqa: WPS428 valid protocol syntax
+
+    async def check_kafka(self) -> bool:
+        """
+        Checks if Kafka is available.
+
+        Checks if Kafka is available
+        by fetching all metadata from the Kafka client.
+        """
+        ...  # noqa: WPS428 valid protocol syntax
+
 
 @dataclass
 class Hash:
@@ -349,6 +366,14 @@ class AuthService:
         :type image: UploadFile
         """
         await self.producer.upload_image(user_creds.username, image)
+
+    async def start(self) -> None:
+        """Запускает producer."""
+        await self.producer.start()
+
+    async def stop(self) -> None:
+        """Останавливает producer."""
+        await self.producer.stop()
 
     def _decode_token(self, token: str) -> Token:
         try:
