@@ -38,7 +38,7 @@ class KafkaProducer:  # noqa: WPS214 for now 8 methods, will extract in future
             logger.error(f'{file_path} not saved, {file_err.args}')
         try:
             await self.producer.send_and_wait(
-                'faces', message,
+                get_settings().kafka.topics, message,
             )
         except Exception as kafka_err:
             logger.error(f'{message} not sent, {kafka_err.args}')
