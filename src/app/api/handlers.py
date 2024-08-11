@@ -9,13 +9,14 @@ from fastapi import (
     HTTPException,
     UploadFile,
     status,
+    Form,
 )
 from pydantic import ValidationError
 
 from app.core.authentication import AuthService
 from app.core.config import get_auth_config
 from app.core.errors import AuthorizationError, NotFoundError, ServerError
-from app.core.models import Token, UserCredentials
+from app.core.models import Token, UserCredentials, validation_rules
 from app.external.in_memory_repository import InMemoryRepository
 from app.external.kafka import KafkaProducer
 from app.external.redis import TokenCache
@@ -112,7 +113,7 @@ async def check_token(
 
 @router.post('/verify')
 async def verify(
-    username: str,
+    username: Annotated[str, Form(max_length=validation_rules.username_max_len)],  # noqa: E501 can't shorten hint
     image: UploadFile,
     background_tasks: BackgroundTasks,
 ) -> dict[str, str]:
