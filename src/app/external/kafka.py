@@ -30,9 +30,10 @@ class KafkaProducer:  # noqa: WPS214 for now 8 methods, will extract in future
             'username': username,
             'file_path': file_path,
         }
+        file_contents = await image.read()
         try:
             with open(file_path, 'wb') as image_file:
-                image_file.write(image.file.read())
+                image_file.write(file_contents)
                 logger.info(f'{file_path} saved successfully')
         except Exception as file_err:
             logger.error(f'{file_path} not saved, {file_err.args}')

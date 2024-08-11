@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from copy import deepcopy
 from typing import Annotated
 
 from fastapi import (
@@ -119,6 +120,6 @@ async def verify(
 ) -> dict[str, str]:
     """Верифицирует пользователя."""
     background_tasks.add_task(
-        service.verify, username=username, image=image,
+        service.verify, username=username, image=deepcopy(image),
     )
     return {'message': 'ok'}
