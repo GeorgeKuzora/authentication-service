@@ -352,7 +352,7 @@ class AuthService:
         return {'message': 'ok'}
 
     async def verify(
-        self, user_creds: UserCredentials, image: UploadFile,
+        self, username: str, image: UploadFile,
     ) -> None:
         """
         Верифицирует пользователя.
@@ -360,12 +360,12 @@ class AuthService:
         Отправляет сообщение с именим пользователя и изображением
         пользователя в очередь сообщений.
 
-        :param user_creds: Данные пользователя
-        :type user_creds: UserCredentials
+        :param username: Имя пользователя
+        :type username: str
         :param image: изображение пользователя
         :type image: UploadFile
         """
-        await self.producer.upload_image(user_creds.username, image)
+        await self.producer.upload_image(username, image)
 
     async def start(self) -> None:
         """Запускает producer."""

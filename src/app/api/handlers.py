@@ -112,12 +112,12 @@ async def check_token(
 
 @router.post('/verify')
 async def verify(
-    user_creds: UserCredentials,
+    username: str,
     image: UploadFile,
     background_tasks: BackgroundTasks,
 ) -> dict[str, str]:
     """Верифицирует пользователя."""
     background_tasks.add_task(
-        service.verify, user_creds=user_creds, image=image,
+        service.verify, username=username, image=image,
     )
     return {'message': 'ok'}
