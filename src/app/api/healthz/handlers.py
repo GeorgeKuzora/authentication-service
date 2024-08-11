@@ -22,7 +22,7 @@ async def up_check() -> dict[str, str]:
 @healthz_router.get('/ready')
 async def ready_check() -> dict[str, str]:
     """Healthcheck для зависимостей приложения."""
-    if service.producer.check_kafka():
+    if await service.producer.check_kafka():
         return ready_message
     logger.warning('Kafka недоступна')
     raise ServerError(detail='Kafka недоступна')
