@@ -268,11 +268,11 @@ class TestCheckToken:
         # Должен использовать токен созданный в базе данных
         if expected_status_code == status.HTTP_200_OK:
             headers = request_data.get(Key.headers)
-            headers[Key.authorization] = f'Bearer {token.encoded_token}'
+            headers[Key.authorization] = f'Bearer {token.encoded_token}'  # type: ignore  # noqa: E501
 
         response = await client.post(
             self.url,
-            headers=request_data[Key.headers],
+            headers=request_data[Key.headers],  # type: ignore  # noqa: E501
         )
 
         assert response.status_code == expected_status_code
