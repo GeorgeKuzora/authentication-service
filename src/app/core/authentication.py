@@ -193,7 +193,35 @@ class JWTEncoder:
             encoded_token=encoded_token,
         )
 
-    def decode(self, encoded_token: str) -> Token:
+    def decode(self, token: str) -> Token:
+        """
+        Метод декодирования токена.
+
+        :param token: jwt токен в закодированом виде
+        :type token: str
+        :return: токен пользователя
+        :rtype: Token
+        :raises AuthorizationError: если токен не валиден
+        :raises UnprocessableError: если токен не может быть декодирован
+        """
+        try:
+            token_value = token.split(maxsplit=1)[1]
+        except IndexError:
+            logger.info(
+                'Bearer not found',
+            )
+            raise AuthorizationError(
+                detail='Bearer not found',
+            )
+        try:
+            return self._decode(token_value)
+        except Exception:
+            logger.info("can't decode token")
+            raise UnprocessableError(
+                detail='unproccessable token',
+            )
+
+    def _decode(self, encoded_token: str) -> Token:
         """
         Метод декодирования токена.
 
@@ -238,8 +266,8 @@ class AuthService:
         :type config: AuthConfig
         :param cache: Кэш сервиса
         :type cache: Cache
-        :param queue: Очередь сообщений сервиса
-        :type queue: Queue
+        :param producer: Продюсер очереди сообщений
+        :type producer: Producer
         """
         self.repository = repository
         self.encoder = JWTEncoder(config)
@@ -306,7 +334,7 @@ class AuthService:
             raise AuthorizationError(
                 detail=f'{user_creds.username} failed password verification',
             )
-        token_value_decoded = self._decode_token(authorization)
+        token_value_decoded = self.encoder.decode(authorization)
         try:
             token = await self.cache.get_cache(token_value_decoded)
         except KeyError:
@@ -331,7 +359,7 @@ class AuthService:
         :raises NotFoundError: Токен не найден
         :raises AuthorizationError: Срок действия токена вышел
         """
-        token_value_decoded = self._decode_token(authorization)
+        token_value_decoded = self.encoder.decode(authorization)
         try:
             token: Token = await self.cache.get_cache(token_value_decoded)
         except KeyError:
@@ -374,21 +402,3 @@ class AuthService:
     async def stop(self) -> None:
         """Останавливает producer."""
         await self.producer.stop()
-
-    def _decode_token(self, token: str) -> Token:
-        try:
-            token_value = token.split(maxsplit=1)[1]
-        except IndexError:
-            logger.info(
-                'Bearer not found',
-            )
-            raise AuthorizationError(
-                detail='Bearer not found',
-            )
-        try:
-            return self.encoder.decode(token_value)
-        except Exception:
-            logger.info("can't decode token")
-            raise UnprocessableError(
-                detail='unproccessable token',
-            )
