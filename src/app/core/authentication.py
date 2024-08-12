@@ -34,7 +34,7 @@ class Repository(Protocol):
         :param user: объект пользователя
         :type user: User
         """
-        ...  # noqa: WPS428 default Protocol syntax
+        ...
 
     async def create_token(self, token: Token) -> Token:
         """
@@ -43,7 +43,7 @@ class Repository(Protocol):
         :param token: объект токена
         :type token: Token
         """
-        ...  # noqa: WPS428 default Protocol syntax
+        ...
 
     async def get_user(self, user: User) -> User | None:
         """
@@ -52,7 +52,7 @@ class Repository(Protocol):
         :param user: объект пользователя
         :type user: User
         """
-        ...  # noqa: WPS428 default Protocol syntax
+        ...
 
     async def get_token(self, user: User) -> Token | None:
         """
@@ -61,7 +61,7 @@ class Repository(Protocol):
         :param user: объект пользователя
         :type user: User
         """
-        ...  # noqa: WPS428 default Protocol syntax
+        ...
 
     async def update_token(self, token: Token) -> Token:
         """
@@ -70,7 +70,7 @@ class Repository(Protocol):
         :param token: объект токена
         :type token: Token
         """
-        ...  # noqa: WPS428 default Protocol syntax
+        ...
 
 
 class Cache(Protocol):
@@ -83,7 +83,7 @@ class Cache(Protocol):
         :param cache_value: Кэшированное значение
         :type cache_value: Any
         """
-        ...  # noqa: WPS428 valid protocol syntax
+        ...
 
     async def create_cache(self, cache_value: Any) -> None:
         """
@@ -92,7 +92,7 @@ class Cache(Protocol):
         :param cache_value: Кэшируемое значение
         :type cache_value: Any
         """
-        ...  # noqa: WPS428 valid protocol syntax
+        ...
 
 
 class Producer(Protocol):
@@ -107,15 +107,15 @@ class Producer(Protocol):
         :param image: изображение пользователя
         :type image: UploadFile
         """
-        ...  # noqa: WPS428 valid protocol syntax
+        ...
 
     async def start(self) -> None:
         """Запускает producer."""
-        ...  # noqa: WPS428 valid protocol syntax
+        ...
 
     async def stop(self) -> None:
         """Останавливает producer."""
-        ...  # noqa: WPS428 valid protocol syntax
+        ...
 
     async def check_kafka(self) -> bool:
         """
@@ -124,7 +124,7 @@ class Producer(Protocol):
         Checks if Kafka is available
         by fetching all metadata from the Kafka client.
         """
-        ...  # noqa: WPS428 valid protocol syntax
+        ...
 
 
 @dataclass
