@@ -18,6 +18,7 @@ services:
     environment:
       - PYTHONPATH=/workspace/src
       - SECRETS_PATH=/run/secrets/jwt_secrets
+      - CONFIG_PATH=/workspace/src/config/config-local.yml
     secrets:
       - jwt_secrets
 secrets:
