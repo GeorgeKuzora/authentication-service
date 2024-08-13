@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Метод для определния lifespan events приложения."""
+    """Метод для определения lifespan events приложения."""
     logger.info('Starting up kafka producer...')
     await service.start()
     yield
