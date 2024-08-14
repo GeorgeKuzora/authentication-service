@@ -9,44 +9,28 @@ from fastapi import (
     Form,
     Header,
     HTTPException,
+    Request,
     UploadFile,
     status,
 )
 from pydantic import ValidationError
 
-from app.core.authentication import AuthService
-from app.core.config import get_auth_config
 from app.core.errors import AuthorizationError, NotFoundError, ServerError
 from app.core.models import Token, UserCredentials, validation_rules
-from app.external.in_memory_repository import InMemoryRepository
-from app.external.kafka import KafkaProducer
-from app.external.redis import TokenCache
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
 
-def get_service() -> AuthService:
-    """Инициализирует сервис."""
-    cache = TokenCache()
-    persistent = InMemoryRepository()
-    config = get_auth_config()
-    queue = KafkaProducer()
-    return AuthService(
-        repository=persistent, cache=cache, config=config, producer=queue,
-    )
-
-
-service = get_service()
-
-
 @router.post('/login')
 async def authenticate(
     user_creds: UserCredentials,
     authorization: Annotated[str, Header()],
+    request: Request,
 ) -> Token:
     """Хэндлер аутентификации пользователя."""
+    service = request.app.service
     task = asyncio.create_task(service.authenticate(user_creds, authorization))
     try:
         return await task
@@ -70,8 +54,9 @@ async def authenticate(
 
 
 @router.post('/register')
-async def register(user_creds: UserCredentials) -> Token:
+async def register(user_creds: UserCredentials, request: Request) -> Token:
     """Хэндлер регистрации пользователя."""
+    service = request.app.service
     task = asyncio.create_task(service.register(user_creds))
     try:
         return await task
@@ -89,9 +74,10 @@ async def register(user_creds: UserCredentials) -> Token:
 
 @router.post('/check_token')
 async def check_token(
-    authorization: Annotated[str, Header()],
+    authorization: Annotated[str, Header()], request: Request,
 ) -> dict[str, str]:
     """Хэндлер валидации токена пользователя."""
+    service = request.app.service
     task = asyncio.create_task(service.check_token(authorization))
     try:
         return await task  # type: ignore
@@ -117,8 +103,10 @@ async def verify(
     username: Annotated[str, Form(max_length=validation_rules.username_max_len)],  # noqa: E501 can't shorten hint
     image: UploadFile,
     background_tasks: BackgroundTasks,
+    request: Request,
 ) -> dict[str, str]:
     """Верифицирует пользователя."""
+    service = request.app.service
     background_tasks.add_task(
         service.verify, username=username, image=deepcopy(image),
     )

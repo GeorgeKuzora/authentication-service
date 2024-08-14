@@ -1,8 +1,7 @@
 import logging
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 
-from app.api.handlers import service
 from app.core.errors import ServerError
 
 logger = logging.getLogger(__name__)
@@ -20,8 +19,9 @@ async def up_check() -> dict[str, str]:
 
 
 @healthz_router.get('/ready')
-async def ready_check() -> dict[str, str]:
+async def ready_check(request: Request) -> dict[str, str]:
     """Healthcheck для зависимостей приложения."""
+    service = request.app.service
     if await service.producer.check_kafka():
         return ready_message
     logger.warning('Kafka недоступна')
