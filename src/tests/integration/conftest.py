@@ -1,4 +1,6 @@
+import nest_asyncio
 import pytest
+import pytest_asyncio
 
 from app.core.authentication import AuthService, User
 from app.core.config import get_auth_config
@@ -6,17 +8,11 @@ from app.external.in_memory_repository import InMemoryRepository
 from app.external.kafka import KafkaProducer
 from app.external.redis import TokenCache
 
+nest_asyncio.apply()
 
-@pytest.fixture
-def service():
-    """
-    Фикстура создает экземпляр сервиса.
 
-    Атрибуты сервиса repository, config являются реальными объектами.
-
-    :return: экземпляр сервиса
-    :rtype: AuthService
-    """
+def get_service():
+    """Создает экземпляр сервиса."""
     config = get_auth_config()
     repository = InMemoryRepository()
     cache = TokenCache()
@@ -27,6 +23,19 @@ def service():
         cache=cache,
         producer=queue,
     )
+
+
+@pytest_asyncio.fixture
+async def service():
+    """
+    Фикстура создает экземпляр сервиса.
+
+    Атрибуты сервиса repository, config являются реальными объектами.
+
+    :return: экземпляр сервиса
+    :rtype: AuthService
+    """
+    return get_service()
 
 
 @pytest.fixture
@@ -129,23 +138,29 @@ def service_db_user_with_invalid_pass(service: AuthService):
 
 
 @pytest.fixture
-def service_mocker(monkeypatch):
+def service_db_token_not_found(service: AuthService):
     """
-    Мокирует app.api.handlers.service, возращает функцию мокирования.
+    Возвращает функцию для создания сервиса.
 
-    Функция мокирования принимает объект сервиса и подменяет им
-    объект сервиса в модуле хэндлеров.
+    Возвращаемая функция примает username и password,
+    создает запись о пользователе в базе данных
+    и добавляет токен для пользователя в базу данных.
 
-    :param monkeypatch: Фикстура для патча объектов
-    :return: Функция мокирования
-    :rtype: Callable
+    :param service: экземпляр сервиса
+    :type service: AuthService
+    :return: функция создания сервиса
+    :rtype: callable
     """
-    def _service_mocker(service: AuthService):  # noqa: WPS430 need for params
-        monkeypatch.setattr(
-            'app.api.handlers.service',
-            service,
+    async def _service_db_token_not_found(username, password):  # noqa: WPS430, E501 need for service state parametrization
+        user_id = 1
+        user = User(
+            username=username,
+            password_hash=service.hash.get(password),
+            user_id=user_id,
         )
-    return _service_mocker
+        token = service.encoder.encode(user)
+        return service, token
+    return _service_db_token_not_found
 
 
 @pytest.fixture
@@ -176,26 +191,20 @@ def service_db_token_found(service: AuthService):
 
 
 @pytest.fixture
-def service_db_token_not_found(service: AuthService):
+def service_mocker(monkeypatch):
     """
-    Возвращает функцию для создания сервиса.
+    Мокирует app.api.handlers.service, возращает функцию мокирования.
 
-    Возвращаемая функция примает username и password,
-    создает запись о пользователе в базе данных
-    и добавляет токен для пользователя в базу данных.
+    Функция мокирования принимает объект сервиса и подменяет им
+    объект сервиса в модуле хэндлеров.
 
-    :param service: экземпляр сервиса
-    :type service: AuthService
-    :return: функция создания сервиса
-    :rtype: callable
+    :param monkeypatch: Фикстура для патча объектов
+    :return: Функция мокирования
+    :rtype: Callable
     """
-    async def _service_db_token_not_found(username, password):  # noqa: WPS430, E501 need for service state parametrization
-        user_id = 1
-        user = User(
-            username=username,
-            password_hash=service.hash.get(password),
-            user_id=user_id,
+    def _service_mocker(service: AuthService):  # noqa: WPS430 need for params
+        monkeypatch.setattr(
+            'app.service.app.service',
+            service,
         )
-        token = service.encoder.encode(user)
-        return service, token
-    return _service_db_token_not_found
+    return _service_mocker

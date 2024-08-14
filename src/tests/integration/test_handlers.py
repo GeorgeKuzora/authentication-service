@@ -1,10 +1,11 @@
 from enum import StrEnum
 
 import pytest
+import pytest_asyncio
 from fastapi import status
 from httpx import AsyncClient
 
-from app.service import app
+from app.service import app, get_service
 
 
 class Fixtures(StrEnum):
@@ -38,9 +39,11 @@ invalid_header_invalid_value = {Key.authorization: f'{bearer} invalid_value'}
 invalid_header_invalid_key = {'invalid-key': f'{bearer} {encoded_token}'}
 
 
-@pytest.fixture(scope='session')
-def client() -> AsyncClient:
+@pytest_asyncio.fixture(scope='session')
+async def client() -> AsyncClient:
     """Создает тестовый клиент."""
+    service = get_service()
+    app.service = service  # type: ignore # app has **extras specially for it
     return AsyncClient(app=app, base_url='http://test')
 
 

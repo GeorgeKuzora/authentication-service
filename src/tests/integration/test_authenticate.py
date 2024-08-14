@@ -58,6 +58,7 @@ class TestAuthenticate:
     is_none = True
 
     @pytest.mark.asyncio
+    @pytest.mark.anyio
     @pytest.mark.parametrize(
         'user_creds, service_state_factory', (
             pytest.param(
