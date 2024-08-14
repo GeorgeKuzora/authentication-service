@@ -9,6 +9,7 @@ variables:
   APP_CODE_DIR: 'src/app'
   TEST_CODE_DIR: 'src/tests'
   SECRETS_PATH: './.devcontainer/app/secrets'
+  CONFIG_PATH: '/workspace/src/config/config-local.yml'
 
 default:
   image: python:3.12.4-slim-bookworm
@@ -27,6 +28,8 @@ default:
     - export POETRY_NO_INTERACTION=1
     - export POETRY_VERSION=$POETRY_VERSION
     - export SECRETS_PATH=$SECRETS_PATH
+    - export SECRETS_PATH=$SECRETS_PATH
+    - export CONFIG_PATH=$CONFIG_PATH
     - export PATH="$POETRY_HOME/bin:$PATH"
     - export PATH="/root/.local/bin:$PATH"
     - apt-get update
