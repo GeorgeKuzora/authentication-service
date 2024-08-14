@@ -28,6 +28,7 @@ pytest-cov = "*"
 anyio = { version = "^4.4.0", extras = ["trio"] }
 pytest-asyncio = "*"
 types-PyYAML = "^6.0.12.20240808"
+nest-asyncio = "*"
 
 [build-system]
 requires = ["poetry-core"]
