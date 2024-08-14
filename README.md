@@ -32,6 +32,7 @@
 - PostgreSQL
 - Redis
 - Kubernetes
+- Kafka
 
 ## Локальная разработка и тестирование проекта
 
