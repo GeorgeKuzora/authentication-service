@@ -9,7 +9,7 @@ variables:
   APP_CODE_DIR: 'src/app'
   TEST_CODE_DIR: 'src/tests'
   SECRETS_PATH: './.devcontainer/app/secrets'
-  CONFIG_PATH: '/workspace/src/config/config-local.yml'
+  CONFIG_PATH: 'src/config/config-local.yml'
 
 default:
   image: python:3.12.4-slim-bookworm
