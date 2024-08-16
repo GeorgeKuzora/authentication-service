@@ -6,6 +6,7 @@ from typing import Self
 
 import dotenv
 import yaml
+from pydantic import Field, PostgresDsn
 from pydantic_settings import BaseSettings
 
 from app.core.errors import ConfigError
@@ -138,10 +139,22 @@ class KafkaSettings(BaseSettings):
         return f'{self.host}:{self.port}'
 
 
+class PostgresSettings(BaseSettings):
+    """Конфигурация postgres."""
+
+    pg_dns: PostgresDsn = Field(
+        'postgresql+psycopg2://myuser:mysecretpassword@db:5432/mydatabase',
+        validate_default=False,
+    )
+    pool_size: int = 10
+    max_overflow: int = 20
+
+
 class Settings(BaseSettings):
     """Конфигурация приложения."""
 
     kafka: KafkaSettings
+    postgres: PostgresSettings
 
     @classmethod
     def from_yaml(cls, config_path) -> Self:
