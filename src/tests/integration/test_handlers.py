@@ -5,7 +5,8 @@ import pytest_asyncio
 from fastapi import status
 from httpx import AsyncClient
 
-from app.service import app, get_service
+from app.service import app
+from tests.integration.conftest import get_service
 
 
 class Fixtures(StrEnum):
