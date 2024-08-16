@@ -36,39 +36,12 @@ class Repository(Protocol):
         """
         ...
 
-    async def create_token(self, token: Token) -> Token:
-        """
-        Абстрактный метод создания токена.
-
-        :param token: объект токена
-        :type token: Token
-        """
-        ...
-
     async def get_user(self, user: User) -> User | None:
         """
         Абстрактный метод получения токена.
 
         :param user: объект пользователя
         :type user: User
-        """
-        ...
-
-    async def get_token(self, user: User) -> Token | None:
-        """
-        Абстрактный метод получения токена.
-
-        :param user: объект пользователя
-        :type user: User
-        """
-        ...
-
-    async def update_token(self, token: Token) -> Token:
-        """
-        Абстрактный метод обновления токена.
-
-        :param token: объект токена
-        :type token: Token
         """
         ...
 

@@ -7,8 +7,8 @@ from app.api.handlers import router
 from app.api.healthz.handlers import healthz_router
 from app.core.authentication import AuthService
 from app.core.config import get_auth_config
-from app.external.in_memory_repository import InMemoryRepository
 from app.external.kafka import KafkaProducer
+from app.external.postgres.storage import DBStorage
 from app.external.redis import TokenCache
 
 logger = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 def get_service() -> AuthService:
     """Инициализирует сервис."""
     cache = TokenCache()
-    persistent = InMemoryRepository()
+    persistent = DBStorage()
     config = get_auth_config()
     queue = KafkaProducer()
     return AuthService(
