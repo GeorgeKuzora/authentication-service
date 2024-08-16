@@ -85,5 +85,13 @@ pytest-test-job:
       changes:
         - '**/*'
       when: manual
+  services:
+    - name: postgres:16.3
+      alias: db,postgres,pg
+      variables:
+        POSTGRES_PASSWORD: mysecretpassword
+        POSTGRES_USER: myuser
+        POSTGRES_DB: mydatabase
   script:
-    - poetry run pytest --disable-warnings
+    - "poetry run alembic upgrade head"
+    - "poetry run pytest --disable-warnings src"
