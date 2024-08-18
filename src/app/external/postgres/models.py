@@ -27,6 +27,7 @@ class User(Base):
         back_populates='user',
     )
     reports: Mapped[List['Report']] = relationship(back_populates='user')
+    vector: Mapped[bytes] = mapped_column(nullable=True)
 
 
 class Transaction(Base):
