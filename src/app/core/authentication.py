@@ -34,16 +34,7 @@ class Repository(Protocol):
         :param user: объект пользователя
         :type user: User
         """
-        ...  # noqa: WPS428 default Protocol syntax
-
-    async def create_token(self, token: Token) -> Token:
-        """
-        Абстрактный метод создания токена.
-
-        :param token: объект токена
-        :type token: Token
-        """
-        ...  # noqa: WPS428 default Protocol syntax
+        ...
 
     async def get_user(self, user: User) -> User | None:
         """
@@ -52,25 +43,7 @@ class Repository(Protocol):
         :param user: объект пользователя
         :type user: User
         """
-        ...  # noqa: WPS428 default Protocol syntax
-
-    async def get_token(self, user: User) -> Token | None:
-        """
-        Абстрактный метод получения токена.
-
-        :param user: объект пользователя
-        :type user: User
-        """
-        ...  # noqa: WPS428 default Protocol syntax
-
-    async def update_token(self, token: Token) -> Token:
-        """
-        Абстрактный метод обновления токена.
-
-        :param token: объект токена
-        :type token: Token
-        """
-        ...  # noqa: WPS428 default Protocol syntax
+        ...
 
 
 class Cache(Protocol):
@@ -83,7 +56,7 @@ class Cache(Protocol):
         :param cache_value: Кэшированное значение
         :type cache_value: Any
         """
-        ...  # noqa: WPS428 valid protocol syntax
+        ...
 
     async def create_cache(self, cache_value: Any) -> None:
         """
@@ -92,13 +65,13 @@ class Cache(Protocol):
         :param cache_value: Кэшируемое значение
         :type cache_value: Any
         """
-        ...  # noqa: WPS428 valid protocol syntax
+        ...
 
 
-class Queue(Protocol):
-    """Интерфейс кэша сервиса."""
+class Producer(Protocol):
+    """Интерфейс очереди сообщений сервиса."""
 
-    async def send_message(self, username: str, image: UploadFile) -> None:
+    async def upload_image(self, username: str, image: UploadFile) -> None:
         """
         Отправляет сообщение с файлом.
 
@@ -107,7 +80,24 @@ class Queue(Protocol):
         :param image: изображение пользователя
         :type image: UploadFile
         """
-        ...  # noqa: WPS428 valid protocol syntax
+        ...
+
+    async def start(self) -> None:
+        """Запускает producer."""
+        ...
+
+    async def stop(self) -> None:
+        """Останавливает producer."""
+        ...
+
+    async def check_kafka(self) -> bool:
+        """
+        Checks if Kafka is available.
+
+        Checks if Kafka is available
+        by fetching all metadata from the Kafka client.
+        """
+        ...
 
 
 @dataclass
@@ -176,7 +166,35 @@ class JWTEncoder:
             encoded_token=encoded_token,
         )
 
-    def decode(self, encoded_token: str) -> Token:
+    def decode(self, token: str) -> Token:
+        """
+        Метод декодирования токена.
+
+        :param token: jwt токен в закодированом виде
+        :type token: str
+        :return: токен пользователя
+        :rtype: Token
+        :raises AuthorizationError: если токен не валиден
+        :raises UnprocessableError: если токен не может быть декодирован
+        """
+        try:
+            token_value = token.split(maxsplit=1)[1]
+        except IndexError:
+            logger.info(
+                'Bearer not found',
+            )
+            raise AuthorizationError(
+                detail='Bearer not found',
+            )
+        try:
+            return self._decode(token_value)
+        except Exception:
+            logger.info("can't decode token")
+            raise UnprocessableError(
+                detail='unproccessable token',
+            )
+
+    def _decode(self, encoded_token: str) -> Token:
         """
         Метод декодирования токена.
 
@@ -210,7 +228,7 @@ class AuthService:
         repository: Repository,
         config: AuthConfig,
         cache: Cache,
-        queue: Queue,
+        producer: Producer,
     ) -> None:
         """
         Функция инициализации.
@@ -221,14 +239,14 @@ class AuthService:
         :type config: AuthConfig
         :param cache: Кэш сервиса
         :type cache: Cache
-        :param queue: Очередь сообщений сервиса
-        :type queue: Queue
+        :param producer: Продюсер очереди сообщений
+        :type producer: Producer
         """
         self.repository = repository
         self.encoder = JWTEncoder(config)
         self.hash = Hash()
         self.cache = cache
-        self.queue = queue
+        self.producer = producer
 
     async def register(self, user_creds: UserCredentials) -> Token:
         """
@@ -289,7 +307,7 @@ class AuthService:
             raise AuthorizationError(
                 detail=f'{user_creds.username} failed password verification',
             )
-        token_value_decoded = self._decode_token(authorization)
+        token_value_decoded = self.encoder.decode(authorization)
         try:
             token = await self.cache.get_cache(token_value_decoded)
         except KeyError:
@@ -314,7 +332,7 @@ class AuthService:
         :raises NotFoundError: Токен не найден
         :raises AuthorizationError: Срок действия токена вышел
         """
-        token_value_decoded = self._decode_token(authorization)
+        token_value_decoded = self.encoder.decode(authorization)
         try:
             token: Token = await self.cache.get_cache(token_value_decoded)
         except KeyError:
@@ -335,7 +353,7 @@ class AuthService:
         return {'message': 'ok'}
 
     async def verify(
-        self, user_creds: UserCredentials, image: UploadFile,
+        self, username: str, image: UploadFile,
     ) -> None:
         """
         Верифицирует пользователя.
@@ -343,27 +361,17 @@ class AuthService:
         Отправляет сообщение с именим пользователя и изображением
         пользователя в очередь сообщений.
 
-        :param user_creds: Данные пользователя
-        :type user_creds: UserCredentials
+        :param username: Имя пользователя
+        :type username: str
         :param image: изображение пользователя
         :type image: UploadFile
         """
-        await self.queue.send_message(user_creds.username, image)
+        await self.producer.upload_image(username, image)
 
-    def _decode_token(self, token: str) -> Token:
-        try:
-            token_value = token.split(maxsplit=1)[1]
-        except IndexError:
-            logger.info(
-                'Bearer not found',
-            )
-            raise AuthorizationError(
-                detail='Bearer not found',
-            )
-        try:
-            return self.encoder.decode(token_value)
-        except Exception:
-            logger.info("can't decode token")
-            raise UnprocessableError(
-                detail='unproccessable token',
-            )
+    async def start(self) -> None:
+        """Запускает producer."""
+        await self.producer.start()
+
+    async def stop(self) -> None:
+        """Останавливает producer."""
+        await self.producer.stop()

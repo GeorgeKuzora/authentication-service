@@ -1,0 +1,11 @@
+kafka:
+  host: "kafka"
+  port: 9092
+  file_encoding: "utf-8"
+  file_compression_quality: 1
+  storage_path: "/var/www/face_verification/vectors"
+  topics: 'faces'
+postgres:
+  pg_dns: "postgresql+psycopg2://postgres:postgres@db:5432/persistent"
+  pool_size: 10
+  max_overflow: 20

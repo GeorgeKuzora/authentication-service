@@ -1,10 +1,12 @@
 from enum import StrEnum
 
 import pytest
+import pytest_asyncio
 from fastapi import status
 from httpx import AsyncClient
 
 from app.service import app
+from tests.integration.conftest import get_service
 
 
 class Fixtures(StrEnum):
@@ -38,9 +40,11 @@ invalid_header_invalid_value = {Key.authorization: f'{bearer} invalid_value'}
 invalid_header_invalid_key = {'invalid-key': f'{bearer} {encoded_token}'}
 
 
-@pytest.fixture(scope='session')
-def client() -> AsyncClient:
+@pytest_asyncio.fixture(scope='session')
+async def client() -> AsyncClient:
     """Создает тестовый клиент."""
+    service = get_service()
+    app.service = service  # type: ignore # app has **extras specially for it
     return AsyncClient(app=app, base_url='http://test')
 
 
@@ -166,10 +170,10 @@ class TestAuthenticate:
         """Тестирует login."""
         builder = request.getfixturevalue(builder_fixture)
         auth_service = await builder(
-            request_data[Key.credentials].get(
+            request_data.get(Key.credentials).get(
                 Key.username, invalid_credentials['user_id'],
             ),
-            request_data[Key.credentials].get(
+            request_data.get(Key.credentials).get(
                 Key.password, invalid_credentials['pass'],
             ),
         )
@@ -177,15 +181,15 @@ class TestAuthenticate:
 
         response = await client.post(
             self.url,
-            json=request_data[Key.credentials],
-            headers=request_data[Key.headers],
+            json=request_data.get(Key.credentials),
+            headers=request_data.get(Key.headers),
         )
 
         assert response.status_code == expected_status_code
         if expected_status_code == status.HTTP_200_OK:
             assert (
                 response.json()['subject'] ==
-                request_data[Key.credentials][Key.username]
+                request_data.get(Key.credentials).get(Key.username)
             )
 
 
@@ -257,22 +261,22 @@ class TestCheckToken:
         """Тестирует check_token."""
         builder = request.getfixturevalue(builder_fixture)
         auth_service, token = await builder(
-            request_data[Key.credentials].get(
+            request_data.get(Key.credentials).get(
                 Key.username, invalid_credentials['user_id'],
             ),
-            request_data[Key.credentials].get(
+            request_data.get(Key.credentials).get(
                 Key.password, invalid_credentials['pass'],
             ),
         )
         service_mocker(auth_service)
         # Должен использовать токен созданный в базе данных
         if expected_status_code == status.HTTP_200_OK:
-            headers = request_data[Key.headers]
-            headers[Key.authorization] = f'Bearer {token.encoded_token}'
+            headers = request_data.get(Key.headers)
+            headers[Key.authorization] = f'Bearer {token.encoded_token}'  # type: ignore  # noqa: E501
 
         response = await client.post(
             self.url,
-            headers=request_data[Key.headers],
+            headers=request_data[Key.headers],  # type: ignore  # noqa: E501
         )
 
         assert response.status_code == expected_status_code
