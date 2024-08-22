@@ -1,4 +1,5 @@
 stages:
+  - build
   - lint
   - test
 
@@ -95,3 +96,41 @@ pytest-test-job:
   script:
     - "poetry run alembic upgrade head"
     - "poetry run pytest --disable-warnings src"
+
+docker-build-job:
+  interruptible: true
+  stage: build
+  image:
+    docker:27.1.2-cli
+  services:
+    - name: docker:27.1.2-dind
+      alias: docker
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - "**/*"
+    - if: $CI_PIPELINE_SOURCE == "push"
+      changes:
+        - $SOURCE_CODE_DIR/**/*
+    - if: $CI_PIPELINE_SOURCE == "push"
+      changes:
+        - "**/*"
+      when: manual
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+    IMAGE_NAME: "kuzora-auth-service:latest"
+    BUILD_IMAGE: "${CI_REGISTRY}/${IMAGE_NAME}"
+  before_script:
+    - docker info
+    - echo ${BUILD_IMAGE}
+    - export DOCKER_CONFIG="$(mktemp -d)/"
+    - echo -e ${DOCKER_AUTH_CONFIG} > $DOCKER_CONFIG/config.json
+  script:
+    - docker build -t ${BUILD_IMAGE} .
+    - docker tag ${BUILD_IMAGE} ${BUILD_IMAGE}
+    - docker push ${BUILD_IMAGE}
+
+  after_script:
+    - rm -f $DOCKER_CONFIG
+    - unset DOCKER_CONFIG
+  allow_failure: true
