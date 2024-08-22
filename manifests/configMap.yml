@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kuzora-auth-configmap
+data:
+  config_path: /app/config/config-kube.yml
+  pythonpath: /app/src
