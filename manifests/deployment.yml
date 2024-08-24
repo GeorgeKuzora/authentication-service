@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: kuzora-auth
-          image: ...
+          image: gkuzora/auth-service:latest
           resources:
             limits:
               memory: "200Mi"
