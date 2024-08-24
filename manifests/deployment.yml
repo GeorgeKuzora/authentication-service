@@ -36,6 +36,9 @@ spec:
             periodSeconds: 2
           ports:
             - containerPort: 8080
+          volumeMounts:
+          - mountPath: "/var/www/face_verification/kuzora/vectors"
+            name: vector-volume
           env:
             - name: CONFIG_PATH
               valueFrom:
@@ -47,3 +50,7 @@ spec:
                 configMapKeyRef:
                   name: kuzora-auth-configmap
                   key: pythonpath
+      volumes:
+        - name: vector-volume
+          persistentVolumeClaim:
+            claimName: kuzora-vectors-pvc
