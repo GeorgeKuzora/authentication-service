@@ -3,6 +3,7 @@ kind: ConfigMap
 metadata:
   name: kuzora-auth-configmap
 data:
-  config_path: /app/config/config-kube.yml
+  config_path: /app/src/config/config-kube.yml
   pythonpath: /app/src
   alembic_config: /app/alembic_kube.ini
+  secrets_path: /app/src/config/secrets
