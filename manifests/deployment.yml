@@ -19,6 +19,21 @@ spec:
             limits:
               memory: "200Mi"
               cpu: "100m"
+          readinessProbe:
+            httpGet:
+              path: healthz/ready
+              port: 8080
+            failureThreshold: 5
+            initialDelaySeconds: 30
+            periodSeconds: 2
+            successThreshold: 2
+          livenessProbe:
+            httpGet:
+              path: healthz/up
+              port: 8080
+            failureThreshold: 10
+            initialDelaySeconds: 3
+            periodSeconds: 2
           ports:
             - containerPort: 8080
           env:
