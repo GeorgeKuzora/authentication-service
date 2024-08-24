@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kuzora-database-migrate-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: kuzora-database-migrate
+        image: gkuzora/auth-service:latest
+        command: ["poetry", "run", "alembic", "upgrade", "head"]
+        env:
+          - name: CONFIG_PATH
+            valueFrom:
+              configMapKeyRef:
+                name: kuzora-auth-configmap
+                key: config_path
+          - name: PYTHONPATH
+            valueFrom:
+              configMapKeyRef:
+                name: kuzora-auth-configmap
+                key: pythonpath
+          - name: ALEMBIC_CONFIG
+            valueFrom:
+              configMapKeyRef:
+                name: kuzora-auth-configmap
+                key: alembic_config
+      restartPolicy: Never
+  backoffLimit: 4
+  activeDeadlineSeconds: 120
