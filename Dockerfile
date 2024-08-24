@@ -33,7 +33,7 @@ ENV PYTHONPATH=$SOURCE_PATH \
     CONFIG_PATH=$CONFIG_DIR_PATH/config-local.yml \
     SECRETS_PATH=$CONFIG_DIR_PATH/secrets
 
-COPY src ./src
+COPY . .
 
 EXPOSE 8080
 
