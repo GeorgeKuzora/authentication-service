@@ -5,3 +5,4 @@ metadata:
 data:
   config_path: /app/config/config-kube.yml
   pythonpath: /app/src
+  alembic_config: /app/alembic_kube.ini
