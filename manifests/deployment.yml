@@ -50,6 +50,16 @@ spec:
                 configMapKeyRef:
                   name: kuzora-auth-configmap
                   key: pythonpath
+            - name: ALEMBIC_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  name: kuzora-auth-configmap
+                  key: alembic_config
+            - name: SECRETS_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: kuzora-auth-configmap
+                  key: secrets_path
       volumes:
         - name: vector-volume
           persistentVolumeClaim:
