@@ -35,7 +35,7 @@ ENV PYTHONPATH=$SOURCE_PATH \
 
 COPY src ./src
 
-EXPOSE 8000
+EXPOSE 8080
 
 ENTRYPOINT ["poetry", "run"]
-CMD ["uvicorn", "app.service:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.service:app", "--host", "0.0.0.0", "--port", "8080"]
