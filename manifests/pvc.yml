@@ -3,12 +3,10 @@ kind: PersistentVolumeClaim
 metadata:
   name: kuzora-vectors-pvc
 spec:
+  storageClassName: yc-network-hdd
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   volumeMode: Filesystem
   resources:
     requests:
       storage: 1Gi
-  selector:
-    matchLabels:
-      app: "stable"
