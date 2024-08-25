@@ -17,14 +17,17 @@ spec:
           image: gkuzora/auth-service:latest
           resources:
             limits:
-              memory: "200Mi"
-              cpu: "100m"
+              memory: "900Mi"
+              cpu: "900m"
+            requests:
+              memory: "500Mi"
+              cpu: "500m"
           readinessProbe:
             httpGet:
               path: /healthz/ready
               port: 8080
             failureThreshold: 5
-            initialDelaySeconds: 30
+            initialDelaySeconds: 120
             periodSeconds: 2
             successThreshold: 2
           livenessProbe:
