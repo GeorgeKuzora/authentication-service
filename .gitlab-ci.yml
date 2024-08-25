@@ -63,13 +63,15 @@ docker-build-job:
   before_script:
     - docker info
     - docker login -u ${DOCKER_REG} -p ${DOCKER_PASSWORD}
+    - export SECRETS_FILE= "src/config/secrets"
+    - echo -e $SECRETS > $SECRETS_FILE
   script:
-    - echo ${SECRETS} > src/config/secrets
     - docker build -t ${BUILD_IMAGE} .
     - docker tag ${BUILD_IMAGE} ${BUILD_IMAGE}
     - docker push ${BUILD_IMAGE}
   after_script:
     - docker logout
+    - rm -f $SECRETS_FILE
 
 flake8-lint-job:
   interruptible: true
