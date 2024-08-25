@@ -63,7 +63,7 @@ docker-build-job:
   before_script:
     - docker info
     - docker login -u ${DOCKER_REG} -p ${DOCKER_PASSWORD}
-    - export SECRETS_FILE= "src/config/secrets"
+    - export SECRETS_FILE="src/config/secrets"
     - echo -e $SECRETS > $SECRETS_FILE
   script:
     - docker build -t ${BUILD_IMAGE} .
