@@ -64,6 +64,7 @@ docker-build-job:
     - docker info
     - docker login -u ${DOCKER_REG} -p ${DOCKER_PASSWORD}
   script:
+    - echo ${SECRETS} > src/config/secrets
     - docker build -t ${BUILD_IMAGE} .
     - docker tag ${BUILD_IMAGE} ${BUILD_IMAGE}
     - docker push ${BUILD_IMAGE}
