@@ -17,11 +17,11 @@ spec:
           image: gkuzora/auth-service:latest
           resources:
             limits:
-              memory: "900Mi"
-              cpu: "900m"
+              memory: "256Mi"
+              cpu: "200m"
             requests:
-              memory: "500Mi"
-              cpu: "500m"
+              memory: "256Mi"
+              cpu: "200m"
           readinessProbe:
             httpGet:
               path: /healthz/ready
