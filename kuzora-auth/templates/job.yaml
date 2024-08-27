@@ -1,0 +1,16 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Values.job.name }}-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: {{ .Values.job.name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        command: {{ .Values.job.command }}
+        env:
+          {{- toYaml .Values.environment | nindent 12 }}
+      restartPolicy: {{ .Values.job.restartPolicy }}
+  backoffLimit: {{ .Values.job.backoffLimit }}
+  activeDeadlineSeconds: {{ .Values.job.activeDeadlineSeconds }}

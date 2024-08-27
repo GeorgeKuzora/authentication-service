@@ -1,0 +1,11 @@
+kafka:
+  host: "infra-kafka-controller-headless"
+  port: 9092
+  file_encoding: "utf-8"
+  file_compression_quality: 1
+  storage_path: "/var/www/face_verification/kuzora/vectors"
+  topics: "faces-kuzora"
+postgres:
+  pg_dns: "postgresql+psycopg2://username:password@postgres-service:5432/gkuzora"
+  pool_size: 10
+  max_overflow: 20

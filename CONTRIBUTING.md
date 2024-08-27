@@ -187,3 +187,23 @@ docker run --name auth-service -p 127.0.0.1:8083:8000 auth-service
 ```
 
 Приложение будет доступно на порту `127.0.0.1:8083`.
+
+## Запуск сервиса в kubernetes
+
+Для работы приложения в kubernetes созданы манифесты ресурсов kubernetes - `manifests`.
+
+Для того чтобы запустить необходимые ресурсы в кластере kubernetes выполните следующие команды:
+
+```shell
+kubectl apply -f manifests/pvc.yml
+kubectl apply -f manifests/configMap.yml
+kubectl apply -f manifests/serivce.yml
+kubectl apply -f manifests/deployment.yml
+kubectl apply -f manifests/job.yml
+```
+
+Для упрощения работы с манифестами kubernetes создан пакет чартов helm. Для установки приложения в kubernetes при помощи helm выполните команду:
+
+```shell
+helm install kuzora-auth ./kuzora-auth
+```

@@ -1,0 +1,92 @@
+replicaCount: 1
+
+image:
+  repository: gkuzora/auth-service
+  tag: latest
+
+selectorLabels:
+  app: kuzora-auth
+
+configMap:
+  data:
+    config_path: /app/src/config/config-kube.yml
+    pythonpath: /app/src
+    alembic_config: /app/alembic_kube.ini
+    secrets_path: /app/src/config/secrets
+
+job:
+  name: kuzora-database-migrate
+  restartPolicy: Never
+  backoffLimit: 4
+  activeDeadlineSeconds: 120
+  command: ["poetry", "run", "alembic", "upgrade", "head"]
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+secretData:
+  secrets_path: L2FwcC9zcmMvY29uZmlnL3NlY3JldHMK
+
+pvc:
+  name: kuzora-vectors-pvc
+  spec:
+  storageClassName: yc-network-hdd
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  storage: 1Gi
+
+autoscaling:
+  enabled: false
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 200m
+    memory: 256Mi
+
+environment:
+  - name: CONFIG_PATH
+    valueFrom:
+      configMapKeyRef:
+        name: kuzora-auth-configmap
+        key: config_path
+  - name: PYTHONPATH
+    valueFrom:
+      configMapKeyRef:
+        name: kuzora-auth-configmap
+        key: pythonpath
+  - name: ALEMBIC_CONFIG
+    valueFrom:
+      configMapKeyRef:
+        name: kuzora-auth-configmap
+        key: alembic_config
+  - name: SECRETS_PATH
+    valueFrom:
+      configMapKeyRef:
+        name: kuzora-auth-configmap
+        key: secrets_path
+
+livenessProbe:
+  failureThreshold: 10
+  httpGet:
+    path: /healthz/up
+    port: 8080
+  initialDelaySeconds: 3
+  periodSeconds: 2
+readinessProbe:
+  failureThreshold: 5
+  httpGet:
+    path: /healthz/ready
+    port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 2
+  successThreshold: 2
+
+volumes:
+  name: vector-volume
+  mountPath: "/var/www/face_verification/kuzora/vectors"
