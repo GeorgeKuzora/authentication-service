@@ -60,8 +60,8 @@ spec:
                   key: alembic_config
             - name: SECRETS_PATH
               valueFrom:
-                configMapKeyRef:
-                  name: kuzora-auth-configmap
+                secretKeyRef:
+                  name: kuzora-auth-secret
                   key: secrets_path
       volumes:
         - name: vector-volume

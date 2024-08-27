@@ -6,4 +6,3 @@ data:
   config_path: /app/src/config/config-kube.yml
   pythonpath: /app/src
   alembic_config: /app/alembic_kube.ini
-  secrets_path: /app/src/config/secrets
