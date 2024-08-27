@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 from datetime import datetime
@@ -77,9 +78,13 @@ class KafkaProducer:  # noqa: WPS214 for now 8 methods, will extract in future
     async def start(self) -> None:
         """Запускает producer."""
         while True:
-            if self.check_kafka():
+            try:
+                await self.producer.start()
+            except Exception as exc:
+                logger.warning('Waiting for Kafka to start:', exc_info=exc)
+                await asyncio.sleep(10)
+            else:
                 break
-        await self.producer.start()
 
     async def stop(self) -> None:
         """Останавливает producer."""
