@@ -75,7 +75,7 @@ livenessProbe:
   httpGet:
     path: /healthz/up
     port: 8080
-  initialDelaySeconds: 3
+  initialDelaySeconds: 300
   periodSeconds: 2
 readinessProbe:
   failureThreshold: 5
