@@ -76,6 +76,9 @@ class KafkaProducer:  # noqa: WPS214 for now 8 methods, will extract in future
 
     async def start(self) -> None:
         """Запускает producer."""
+        while True:
+            if self.check_kafka():
+                break
         await self.producer.start()
 
     async def stop(self) -> None:
