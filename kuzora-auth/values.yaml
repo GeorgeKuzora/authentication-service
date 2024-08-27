@@ -12,7 +12,6 @@ configMap:
     config_path: /app/src/config/config-kube.yml
     pythonpath: /app/src
     alembic_config: /app/alembic_kube.ini
-    secrets_path: /app/src/config/secrets
 
 job:
   name: kuzora-database-migrate
@@ -27,7 +26,7 @@ service:
   targetPort: 8080
 
 secretData:
-  secrets_path: L2FwcC9zcmMvY29uZmlnL3NlY3JldHMK
+  secrets_path: L2FwcC9zcmMvY29uZmlnL3NlY3JldHM=
 
 pvc:
   name: kuzora-vectors-pvc
@@ -67,8 +66,8 @@ environment:
         key: alembic_config
   - name: SECRETS_PATH
     valueFrom:
-      configMapKeyRef:
-        name: kuzora-auth-configmap
+      secretKeyRef:
+        name: kuzora-auth-secret
         key: secrets_path
 
 livenessProbe:

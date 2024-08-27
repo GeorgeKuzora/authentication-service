@@ -27,7 +27,7 @@ service:
   targetPort: 8080
 
 secretData:
-  secrets_path: L2FwcC9zcmMvY29uZmlnL3NlY3JldHMK
+  secrets_path: L2FwcC9zcmMvY29uZmlnL3NlY3JldHM=
 
 pvc:
   name: kuzora-vectors-pvc
