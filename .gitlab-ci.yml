@@ -29,7 +29,6 @@ default:
     - export POETRY_NO_INTERACTION=1
     - export POETRY_VERSION=$POETRY_VERSION
     - export SECRETS_PATH=$SECRETS_PATH
-    - export SECRETS_PATH=$SECRETS_PATH
     - export CONFIG_PATH=$CONFIG_PATH
     - export PATH="$POETRY_HOME/bin:$PATH"
     - export PATH="/root/.local/bin:$PATH"
@@ -64,7 +63,8 @@ docker-build-job:
     - docker info
     - docker login -u ${DOCKER_REG} -p ${DOCKER_PASSWORD}
     - export SECRETS_FILE="src/config/secrets"
-    - echo -e $SECRETS > $SECRETS_FILE
+    - echo ${SECRET_KEY} > $SECRETS_FILE
+    - echo ${TOKEN_ALGORITHM} >> $SECRETS_FILE
   script:
     - docker build -t ${BUILD_IMAGE} .
     - docker tag ${BUILD_IMAGE} ${BUILD_IMAGE}
