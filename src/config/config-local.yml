@@ -9,3 +9,6 @@ postgres:
   pg_dns: "postgresql+psycopg2://myuser:mysecretpassword@db:5432/mydatabase"
   pool_size: 10
   max_overflow: 20
+monitoring:
+  metrics:
+    enabled: False

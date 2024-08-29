@@ -9,3 +9,6 @@ postgres:
   pg_dns: "postgresql+psycopg2://username:password@postgres-service:5432/gkuzora"
   pool_size: 10
   max_overflow: 20
+monitoring:
+  metrics:
+    enabled: True
