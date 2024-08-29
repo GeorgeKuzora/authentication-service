@@ -280,3 +280,19 @@ class TestCheckToken:
         )
 
         assert response.status_code == expected_status_code
+
+
+class TestMetrics:
+    """Тестирует хэндлер /metrics."""
+
+    ready_url = '/healthz/ready'
+    url = '/metrics'
+
+    @pytest.mark.asyncio
+    async def test_metrics(self, client):
+        """Тестирует хэндлер /metrics."""
+        await client.get(self.ready_url)
+
+        response = await client.get(self.url)
+
+        assert response

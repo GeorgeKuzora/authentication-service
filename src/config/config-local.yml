@@ -10,5 +10,5 @@ postgres:
   pool_size: 10
   max_overflow: 20
 metrics:
-  enabled: False
+  enabled: True
   service_prefix: "kuzora_auth"
