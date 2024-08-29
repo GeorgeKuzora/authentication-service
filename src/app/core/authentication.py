@@ -8,7 +8,7 @@ import jwt
 from fastapi import Header, UploadFile
 from passlib.context import CryptContext
 
-from app.core.config import AuthConfig
+from app.core.config.models import AuthConfig
 from app.core.errors import (
     AuthorizationError,
     NotFoundError,

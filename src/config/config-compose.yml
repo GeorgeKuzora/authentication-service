@@ -9,6 +9,6 @@ postgres:
   pg_dns: "postgresql+psycopg2://postgres:postgres@db:5432/persistent"
   pool_size: 10
   max_overflow: 20
-monitoring:
-  metrics:
-    enabled: True
+metrics:
+  enabled: True
+  service_prefix: "kuzora_auth"

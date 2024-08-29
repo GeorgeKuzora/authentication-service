@@ -4,7 +4,7 @@ from sqlalchemy import Engine, create_engine, select
 from sqlalchemy.orm import Session
 
 from app.core import models as srv
-from app.core.config import get_settings
+from app.core.config.config import get_settings
 from app.core.errors import RepositoryError
 from app.external.postgres import models as db
 

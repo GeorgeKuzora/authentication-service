@@ -7,7 +7,7 @@ from pathlib import Path
 from aiokafka import AIOKafkaProducer
 from fastapi import UploadFile
 
-from app.core.config import get_settings
+from app.core.config.config import get_settings
 
 logger = logging.getLogger(__name__)
 

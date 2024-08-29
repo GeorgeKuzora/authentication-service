@@ -4,7 +4,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from app.core.config import AuthConfig, AuthConfigAccessData, get_auth_config
+from app.core.config.config import get_auth_config
+from app.core.config.models import AuthConfig, AuthConfigAccessData
 from app.core.errors import ConfigError
 
 
@@ -60,7 +61,7 @@ class TestAuthConfigAccessData:
         """Тестирует метод инициализации объекта."""
         file_path = request.getfixturevalue(file_path_fixture)
         monkeypatch.setattr(
-            'app.core.config.os.environ.get',
+            'app.core.config.models.os.environ.get',
             lambda _: file_path,
         )
         access_data = AuthConfigAccessData()
@@ -112,7 +113,7 @@ class TestAuthConfig:
     def test_init(self, config_values, auth_access_data, monkeypatch):
         """Тестирует метод инициализации объекта."""
         monkeypatch.setattr(
-            'app.core.config.dotenv.dotenv_values',
+            'app.core.config.models.dotenv.dotenv_values',
             lambda *args, **kwargs: config_values,
         )
 
@@ -126,7 +127,7 @@ class TestAuthConfig:
     ):
         """Тестирует возникновение ошибки если ключ не предоставлен."""
         monkeypatch.setattr(
-            'app.core.config.dotenv.dotenv_values',
+            'app.core.config.models.dotenv.dotenv_values',
             lambda *args, **kwargs: self.config_values_no_secret_key,
         )
 
@@ -138,7 +139,7 @@ class TestAuthConfig:
     ):
         """Тестирует возникновение ошибки если алгоритм не предоставлен."""
         monkeypatch.setattr(
-            'app.core.config.dotenv.dotenv_values',
+            'app.core.config.models.dotenv.dotenv_values',
             lambda *args, **kwargs: self.config_values_no_algorithm,
         )
 
@@ -158,11 +159,11 @@ class TestGetAuthConfig:
     def test_is_returns(self, monkeypatch):
         """Тестирует что возвращается значение конфигурации."""
         monkeypatch.setattr(
-            'app.core.config.AuthConfigAccessData.__init__',
+            'app.core.config.config.AuthConfigAccessData.__init__',
             lambda *args, **kwargs: None,
         )
         monkeypatch.setattr(
-            'app.core.config.AuthConfig',
+            'app.core.config.config.AuthConfig',
             lambda *args, **kwargs: self.return_ok,
         )
 
@@ -173,7 +174,7 @@ class TestGetAuthConfig:
     def test_data_access_error(self, monkeypatch):
         """Тестирует ошибку доступа к данным конфигурации."""
         monkeypatch.setattr(
-            'app.core.config.AuthConfigAccessData.__init__',
+            'app.core.config.models.AuthConfigAccessData.__init__',
             lambda *args, **kwargs: self.raise_config_error(),
         )
 
@@ -183,11 +184,11 @@ class TestGetAuthConfig:
     def test_config_values_error(self, monkeypatch):
         """Тестирует ошибку конфигурации."""
         monkeypatch.setattr(
-            'app.core.config.AuthConfigAccessData.__init__',
+            'app.core.config.models.AuthConfigAccessData.__init__',
             lambda *args, **kwargs: None,
         )
         monkeypatch.setattr(
-            'app.core.config.AuthConfig.__init__',
+            'app.core.config.models.AuthConfig.__init__',
             lambda *args, **kwargs: self.raise_config_error(),
         )
 

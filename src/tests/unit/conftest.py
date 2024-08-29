@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from app.core.authentication import AuthService, Token, User
-from app.core.config import AuthConfig
+from app.core.config.models import AuthConfig
 from app.external.in_memory_repository import InMemoryRepository
 
 issued_at = datetime.now()
