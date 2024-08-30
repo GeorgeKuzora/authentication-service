@@ -2,12 +2,7 @@ import logging
 from enum import StrEnum
 from typing import Final
 
-from prometheus_client import (
-    CollectorRegistry,
-    Counter,
-    Histogram,
-    make_asgi_app,
-)
+from prometheus_client import Counter, Histogram
 
 from app.core.config.config import get_settings
 
@@ -36,9 +31,9 @@ SERVICE_PREFIX: Final[str] = get_settings().metrics.service_prefix
 class NoneClient:
     """Клиент заглушка сбора метрик."""
 
-    def __init__(self) -> None:
+    def __init__(self, metrics_app=None) -> None:
         """Метод инициализации."""
-        self.app = None
+        self.app = metrics_app
 
     def inc_ready_count(self, **kwargs) -> None:
         """Метод подчета вызовов пробы healthz/ready."""
@@ -64,10 +59,8 @@ class NoneClient:
 class PrometheusClient:
     """Клиент сбора метрик prometheus."""
 
-    def __init__(self) -> None:
+    def __init__(self, metrics_app) -> None:
         """Метод инициализации."""
-        registry = CollectorRegistry()
-        metrics_app = make_asgi_app(registry=registry)
         self.app = metrics_app
         self.ready_count = Counter(
             name=f'{SERVICE_PREFIX}_ready_count',

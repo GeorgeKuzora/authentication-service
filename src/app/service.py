@@ -2,6 +2,7 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from prometheus_client import make_asgi_app
 
 from app.api.handlers import router
 from app.api.healthz.handlers import healthz_router
@@ -27,15 +28,15 @@ def get_service() -> AuthService:
     )
 
 
-def get_metrics() -> MetricsClient:
+metrics_app = make_asgi_app()
+
+
+def get_metrics(app) -> MetricsClient:
     """Инициализирует клиент метрик."""
     settings = get_settings()
     if settings.metrics.enabled is True:
-        return PrometheusClient()
+        return PrometheusClient(app)
     return NoneClient()
-
-
-metrics_client = get_metrics()
 
 
 @asynccontextmanager
@@ -43,6 +44,7 @@ async def lifespan(app: FastAPI):
     """Метод для определения lifespan events приложения."""
     service = get_service()
     app.service = service  # type: ignore # app has **extras specially for it
+    metrics_client = get_metrics(metrics_app)
     logger.info('Starting up kafka producer...')
     await service.start()
     yield {
@@ -52,7 +54,7 @@ async def lifespan(app: FastAPI):
     await service.stop()
 
 app = FastAPI(lifespan=lifespan)
-app.mount('/metrics', metrics_client.app)  # type: ignore
+app.mount('/metrics', metrics_app)  # type: ignore
 app.include_router(router)
 app.include_router(healthz_router)
 
