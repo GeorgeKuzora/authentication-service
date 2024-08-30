@@ -2,7 +2,7 @@ import pytest
 
 from app.core.authentication import AuthService
 from app.metrics.metrics import NoneClient, PrometheusClient
-from app.service import get_metrics, get_service, lifespan, app
+from app.service import app, get_metrics, get_service, lifespan
 
 
 @pytest.mark.asyncio
