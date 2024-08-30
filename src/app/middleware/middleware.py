@@ -27,7 +27,7 @@ async def ready_metric_middleware(request: Request, call_next):
     response = await call_next(request)
 
     path = request.url.path
-    if path.startswith('/health/ready'):
+    if path.startswith('/healthz/ready'):
         metrics_client.inc_ready_count(
             method=request.method,
             service=service_name,
