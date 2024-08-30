@@ -52,8 +52,6 @@ async def lifespan(app: FastAPI):
     await service.stop()
 
 app = FastAPI(lifespan=lifespan)
-metrics_client = get_metrics()
-app.mount('/metrics', metrics_client.app)  # type: ignore
 app.include_router(router)
 app.include_router(healthz_router)
 
