@@ -286,7 +286,7 @@ class TestMetrics:
     """Тестирует хэндлер /metrics."""
 
     ready_url = '/healthz/ready'
-    url = '/metrics'
+    url = '/metrics/'
 
     @pytest.mark.asyncio
     async def test_metrics(self, client):
@@ -295,4 +295,4 @@ class TestMetrics:
 
         response = await client.get(self.url)
 
-        assert response
+        assert len(response.content) > 100
