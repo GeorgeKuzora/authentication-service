@@ -2,13 +2,16 @@ import logging
 from enum import StrEnum
 from typing import Final
 
-from prometheus_client import Counter, Histogram, make_asgi_app
+from prometheus_client import (
+    CollectorRegistry,
+    Counter,
+    Histogram,
+    make_asgi_app,
+)
 
 from app.core.config.config import get_settings
 
 logger = logging.getLogger(__name__)
-
-app = make_asgi_app()
 
 
 class Label(StrEnum):
@@ -63,7 +66,9 @@ class PrometheusClient:
 
     def __init__(self) -> None:
         """Метод инициализации."""
-        self.app = app
+        registry = CollectorRegistry()
+        metrics_app = make_asgi_app(registry=registry)
+        self.app = metrics_app
         self.ready_count = Counter(
             name=f'{SERVICE_PREFIX}_ready_count',
             documentation='Total number of requests',
