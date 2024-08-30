@@ -35,14 +35,14 @@ def get_metrics() -> MetricsClient:
     return NoneClient()
 
 
+metrics_client = get_metrics()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Метод для определения lifespan events приложения."""
     service = get_service()
     app.service = service  # type: ignore # app has **extras specially for it
-    metrics_client = get_metrics()
-    if metrics_client.app is not None:  # type: ignore
-        app.mount('/metrics', metrics_client.app)  # type: ignore
     logger.info('Starting up kafka producer...')
     await service.start()
     yield {
@@ -52,6 +52,7 @@ async def lifespan(app: FastAPI):
     await service.stop()
 
 app = FastAPI(lifespan=lifespan)
+app.mount('/metrics', metrics_client.app)  # type: ignore
 app.include_router(router)
 app.include_router(healthz_router)
 
