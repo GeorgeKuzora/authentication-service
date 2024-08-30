@@ -5,13 +5,11 @@ from fastapi import Request, status
 
 from app.core.interfaces import MetricsClient
 from app.metrics.metrics import AuthStatus, NoneClient
-from app.service import app
 
 logger = logging.getLogger(__name__)
 
 
 service_name = 'auth-service'
-http_lable = 'http'
 
 
 def get_metrics_client_from_request(request: Request) -> MetricsClient:
@@ -23,7 +21,6 @@ def get_metrics_client_from_request(request: Request) -> MetricsClient:
         return NoneClient()
 
 
-@app.middleware(http_lable)
 async def ready_metric_middleware(request: Request, call_next):
     """Middleware для сбора метрики READY_COUNT."""
     metrics_client = get_metrics_client_from_request(request)
@@ -40,7 +37,6 @@ async def ready_metric_middleware(request: Request, call_next):
     return response
 
 
-@app.middleware(http_lable)
 async def duration_metric_middleware(request: Request, call_next):
     """Middleware для сбора метрики REQUEST_DURATION."""
     metrics_client = get_metrics_client_from_request(request)
@@ -57,7 +53,6 @@ async def duration_metric_middleware(request: Request, call_next):
     return response
 
 
-@app.middleware(http_lable)
 async def count_metric_middleware(request: Request, call_next):
     """Middleware для сбора метрики REQUEST_COUNT."""
     metrics_client = get_metrics_client_from_request(request)
@@ -72,7 +67,6 @@ async def count_metric_middleware(request: Request, call_next):
     return response
 
 
-@app.middleware(http_lable)
 async def auth_metric_middleware(request: Request, call_next):
     """Middleware для сбора метрики AUTH_COUNT."""
     metrics_client = get_metrics_client_from_request(request)

@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from prometheus_client import make_asgi_app
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.api.handlers import router
 from app.api.healthz.handlers import healthz_router
@@ -13,6 +14,7 @@ from app.external.kafka import KafkaProducer
 from app.external.postgres.storage import DBStorage
 from app.external.redis import TokenCache
 from app.metrics.metrics import NoneClient, PrometheusClient
+from app.middleware import middleware
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +56,20 @@ async def lifespan(app: FastAPI):
     await service.stop()
 
 app = FastAPI(lifespan=lifespan)
+
+app.add_middleware(
+    BaseHTTPMiddleware, dispatch=middleware.ready_metric_middleware,
+)
+app.add_middleware(
+    BaseHTTPMiddleware, dispatch=middleware.duration_metric_middleware,
+)
+app.add_middleware(
+    BaseHTTPMiddleware, dispatch=middleware.count_metric_middleware,
+)
+app.add_middleware(
+    BaseHTTPMiddleware, dispatch=middleware.auth_metric_middleware,
+)
+
 app.mount('/metrics', metrics_app)  # type: ignore
 app.include_router(router)
 app.include_router(healthz_router)
