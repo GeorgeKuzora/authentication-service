@@ -66,20 +66,20 @@ async def authenticate(
 async def register(user_creds: UserCredentials, request: Request) -> Token:
     """Хэндлер регистрации пользователя."""
     with global_tracer().start_active_span('register') as scope:
-        scope.span.set_tag('username', user_creds.username)
+        scope.span.set_tag(Tag.username, user_creds.username)
         service = request.app.service
         task = asyncio.create_task(service.register(user_creds))
         try:
             return await task
         except ValidationError as err:
             logger.error(f'Unprocessable entry {user_creds}')
-            scope.span.set_tag('error', "request can't be proccessed")
+            scope.span.set_tag(Tag.error, "request can't be proccessed")
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             ) from err
         except Exception as err:
             logger.error('unexpected server error in /register')
-            scope.span.set_tag('error', 'unexpected error on register')
+            scope.span.set_tag(Tag.error, 'unexpected error on register')
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             ) from err
