@@ -20,6 +20,8 @@ SQLAlchemy = "2.0.32"
 psycopg2-binary = "2.9.9"
 alembic = "1.13.2"
 prometheus-client = "0.20.0"
+opentracing = "2.4.0"
+jaeger-client = "4.8.0"
 
 [tool.poetry.group.dev.dependencies]
 wemake-python-styleguide = "^0.19.2"
