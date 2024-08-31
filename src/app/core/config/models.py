@@ -141,7 +141,7 @@ class TracingSettings(BaseSettings):
     agent_port: int = 6831
     service_name: str = 'auth-service'
     logging: bool = True
-    validate: bool = True
+    validation: bool = True
 
 
 class Settings(BaseSettings):

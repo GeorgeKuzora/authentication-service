@@ -67,7 +67,7 @@ tracing_input = {
     'agent_port': 6831,
     'service_name': 'auth-service',
     'logging': True,
-    'validate': True,
+    'validation': True,
 }
 
 valid_input = {

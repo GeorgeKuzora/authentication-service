@@ -41,7 +41,7 @@ def get_tracer() -> Tracer | None:
             'logging': settings.logging,
         },
         service_name=settings.service_name,
-        validate=settings.validate,
+        validate=settings.validation,
     )
     return config.initialize_tracer()
 
