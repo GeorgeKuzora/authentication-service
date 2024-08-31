@@ -2,6 +2,7 @@ import asyncio
 import logging
 from copy import deepcopy
 from typing import Annotated
+from opentracing import global_tracer
 
 from fastapi import (
     APIRouter,
@@ -56,20 +57,24 @@ async def authenticate(
 @router.post('/register')
 async def register(user_creds: UserCredentials, request: Request) -> Token:
     """Хэндлер регистрации пользователя."""
-    service = request.app.service
-    task = asyncio.create_task(service.register(user_creds))
-    try:
-        return await task
-    except ValidationError as err:
-        logger.error(f'Unprocessable entry {user_creds}')
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        ) from err
-    except Exception as err:
-        logger.error('unexpected server error in /register')
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        ) from err
+    with global_tracer().start_active_span('register') as scope:
+        scope.span.set_tag('username', user_creds.username)
+        service = request.app.service
+        task = asyncio.create_task(service.register(user_creds))
+        try:
+            return await task
+        except ValidationError as err:
+            logger.error(f'Unprocessable entry {user_creds}')
+            scope.span.set_tag('error', "request can't be proccessed")
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            ) from err
+        except Exception as err:
+            logger.error('unexpected server error in /register')
+            scope.span.set_tag('error', 'unexpected error')
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            ) from err
 
 
 @router.post('/check_token')
