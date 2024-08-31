@@ -14,6 +14,7 @@ from app.external.kafka import KafkaProducer
 from app.external.postgres.storage import DBStorage
 from app.external.redis import TokenCache
 from app.metrics.metrics import NoneClient, PrometheusClient
+from app.metrics.tracing import get_tracer, tracing_middleware
 from app.middleware import middleware
 
 logger = logging.getLogger(__name__)
@@ -47,10 +48,12 @@ async def lifespan(app: FastAPI):
     service = get_service()
     app.service = service  # type: ignore # app has **extras specially for it
     metrics_client = get_metrics(metrics_app)
+    tracer = get_tracer()
     logger.info('Starting up kafka producer...')
     await service.start()
     yield {
         'metrics_client': metrics_client,
+        'tracer': tracer,
     }
     logger.info('Shutting down kafka producer...')
     await service.stop()
@@ -68,6 +71,9 @@ app.add_middleware(
 )
 app.add_middleware(
     BaseHTTPMiddleware, dispatch=middleware.auth_metric_middleware,
+)
+app.add_middleware(
+    BaseHTTPMiddleware, dispatch=tracing_middleware,
 )
 
 app.mount('/metrics', metrics_app)  # type: ignore
