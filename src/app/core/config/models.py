@@ -131,12 +131,26 @@ class MetricsSettings(BaseSettings):
     service_prefix: str = 'kuzora_auth'
 
 
+class TracingSettings(BaseSettings):
+    """Конфигурация трейсинга."""
+
+    enabled: bool = False
+    sampler_type: str = 'const'
+    sampler_param: int = 1
+    agent_host: str = 'jaeger'
+    agent_port: int = 6831
+    service_name: str = 'auth-service'
+    logging: bool = True
+    validate: bool = True
+
+
 class Settings(BaseSettings):
     """Конфигурация приложения."""
 
     kafka: KafkaSettings
     postgres: PostgresSettings
     metrics: MetricsSettings
+    tracing: TracingSettings
 
     @classmethod
     def from_yaml(cls, config_path) -> Self:
