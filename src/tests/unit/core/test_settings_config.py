@@ -24,6 +24,7 @@ class Key(StrEnum):
     pool_size = 'pool_size'
     max_overflow = 'max_overflow'
     metrics = 'metrics'
+    tracing = 'tracing'
 
 
 kafka_valid_input = {
@@ -58,21 +59,34 @@ metrics_input = {
     'enabled': False,
     'service_prefix': 'kuzora_auth',
 }
+tracing_input = {
+    'enabled': True,
+    'sampler_type': 'const',
+    'sampler_param': 1,
+    'agent_host': 'jaeger',
+    'agent_port': 6831,
+    'service_name': 'auth-service',
+    'logging': True,
+    'validate': True,
+}
 
 valid_input = {
     Key.kafka: kafka_valid_input,
     Key.postgres: postgres_valid_input,
     Key.metrics: metrics_input,
+    Key.tracing: tracing_input,
 }
 invalid_input_kafka = {
     Key.kafka: kafka_invalid_input,
     Key.postgres: postgres_valid_input,
     Key.metrics: metrics_input,
+    Key.tracing: tracing_input,
 }
 invalid_input_postgres = {
     Key.kafka: kafka_valid_input,
     Key.postgres: postgres_invalid_input,
     Key.metrics: metrics_input,
+    Key.tracing: tracing_input,
 }
 valid_config_path = 'src/config/config-local.yml'
 invalid_config_path = 'src/config/invalid_path.yml'
