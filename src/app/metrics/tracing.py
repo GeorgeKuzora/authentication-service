@@ -73,7 +73,7 @@ async def tracing_middleware(request: Request, call_next):
         tags.HTTP_URL: str(request.url),
     }
     with global_tracer().start_active_span(
-        f'api_gateway_{request.method}_{path}',
+        f'auth_{request.method}_{path}',
         child_of=span_ctx,
         tags=span_tags,
     ) as scope:
