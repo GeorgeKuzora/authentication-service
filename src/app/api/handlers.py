@@ -90,25 +90,30 @@ async def check_token(
     authorization: Annotated[str, Header()], request: Request,
 ) -> dict[str, str]:
     """Хэндлер валидации токена пользователя."""
-    service = request.app.service
-    task = asyncio.create_task(service.check_token(authorization))
-    try:
-        return await task  # type: ignore
-    except NotFoundError as not_found_err:
-        logger.info('token not found error in /check_token')
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-        ) from not_found_err
-    except AuthorizationError as auth_err:
-        logger.info('authorisation error in /check_token')
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-        ) from auth_err
-    except ServerError as err:
-        logger.error('server error in /check_token')
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-        ) from err
+    with global_tracer().start_active_span('register') as scope:
+        scope.span.set_tag(Tag.token, authorization)
+        service = request.app.service
+        task = asyncio.create_task(service.check_token(authorization))
+        try:
+            return await task  # type: ignore
+        except NotFoundError as not_found_err:
+            logger.info('token not found error in /check_token')
+            scope.span.set_tag(Tag.warning, 'token not found')
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+            ) from not_found_err
+        except AuthorizationError as auth_err:
+            logger.info('authorisation error in /check_token')
+            scope.span.set_tag(Tag.warning, 'invalid token')
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+            ) from auth_err
+        except ServerError as err:
+            logger.error('server error in /check_token')
+            scope.span.set_tag(Tag.error, 'unexpected error on check_token')
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            ) from err
 
 
 @router.post('/verify')

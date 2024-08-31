@@ -20,6 +20,7 @@ class Tag(StrEnum):
     username = 'username'
     error = 'error'
     warning = 'warning'
+    token = 'token'  # noqa: S105 not a password
 
 
 def get_tracer() -> Tracer | None:
