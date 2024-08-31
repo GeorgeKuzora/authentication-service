@@ -124,8 +124,10 @@ async def verify(
     request: Request,
 ) -> dict[str, str]:
     """Верифицирует пользователя."""
-    service = request.app.service
-    background_tasks.add_task(
-        service.verify, username=username, image=deepcopy(image),
-    )
-    return {'message': 'ok'}
+    with global_tracer().start_active_span('verify') as scope:
+        scope.span.set_tag(Tag.username, username)
+        service = request.app.service
+        background_tasks.add_task(
+            service.verify, username=username, image=deepcopy(image),
+        )
+        return {'message': 'ok'}
