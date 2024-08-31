@@ -1,3 +1,5 @@
+from enum import StrEnum
+
 from fastapi import Request
 from jaeger_client.config import Config
 from jaeger_client.tracer import Tracer
@@ -10,6 +12,14 @@ from opentracing import (
 )
 
 from app.core.config.config import get_settings
+
+
+class Tag(StrEnum):
+    """Тэги трейсера."""
+
+    username = 'username'
+    error = 'error'
+    warning = 'warning'
 
 
 def get_tracer() -> Tracer | None:
