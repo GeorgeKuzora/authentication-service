@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from app.core.config.config import get_auth_config
-from app.core.config.models import AuthConfig, AuthConfigAccessData
+from app.core.config.auth_models import AuthConfig, AuthConfigAccessData
 from app.core.errors import ConfigError
 
 

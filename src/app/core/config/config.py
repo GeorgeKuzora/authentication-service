@@ -2,7 +2,8 @@ import logging
 import os
 from functools import lru_cache
 
-from app.core.config.models import AuthConfig, AuthConfigAccessData, Settings
+from app.core.config.auth_models import AuthConfig, AuthConfigAccessData
+from app.core.config.settings_models import Settings
 from app.core.errors import ConfigError
 
 logger = logging.getLogger(__name__)
