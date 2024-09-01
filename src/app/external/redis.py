@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from typing import Any
 
 import redis
@@ -56,11 +57,27 @@ class TokenCache:
         mapping = self._get_mapping(cache_value)
         self.storage.hset(key, mapping=mapping)
 
+    async def flush_cache(self) -> None:
+        """Удаляет все ключи."""
+        self.storage.flushall()
+
     def _get_key(self, token: Token) -> str:
-        return f'username:{token.subject}'
+        return f'subject:{token.subject}'
 
     def _get_mapping(self, token: Token) -> dict[str, Any]:
-        return token.model_dump()  # type:ignore # return the same signature
+        return {
+            'subject': token.subject,
+            'issued_at': token.issued_at.isoformat(),
+            'encoded_token': token.encoded_token,
+        }
 
     def _get_token(self, cache_value: dict[str, Any]) -> Token:
-        return Token(**cache_value)
+        return Token(
+            subject=cache_value.get('subject', ''),
+            issued_at=datetime.fromisoformat(
+                cache_value.get(
+                    'issued_at', datetime.now(),
+                ),
+            ),
+            encoded_token=cache_value.get('encoded_token', ''),
+        )

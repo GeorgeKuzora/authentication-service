@@ -67,6 +67,10 @@ class Cache(Protocol):
         """
         ...
 
+    async def flush_cache(self) -> None:
+        """Удаляет все ключи."""
+        ...
+
 
 class Producer(Protocol):
     """Интерфейс очереди сообщений сервиса."""
