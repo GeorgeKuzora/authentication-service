@@ -144,6 +144,14 @@ class TracingSettings(BaseSettings):
     validation: bool = True
 
 
+class RedisSettings(BaseSettings):
+    """Конфигурация redis."""
+
+    host: str = 'redis'
+    port: int = 6379
+    decode_responses: bool = True
+
+
 class Settings(BaseSettings):
     """Конфигурация приложения."""
 
@@ -151,6 +159,7 @@ class Settings(BaseSettings):
     postgres: PostgresSettings
     metrics: MetricsSettings
     tracing: TracingSettings
+    redis: RedisSettings
 
     @classmethod
     def from_yaml(cls, config_path) -> Self:

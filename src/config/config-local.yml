@@ -21,3 +21,7 @@ tracing:
   service_name: "auth-service"
   logging: true
   validation: true
+redis:
+  host: "redis"
+  port: 6379
+  decode_responses: True
