@@ -86,6 +86,7 @@ def service_db_user_yes_token_yes(service: AuthService):
         )
         user = await service.repository.create_user(user)
         token = service.encoder.encode(user)
+        await service.cache.flush_cache()
         await service.cache.create_cache(token)
         return service
     return _service_db_user_yes_token_yes
@@ -159,6 +160,7 @@ def service_db_token_not_found(service: AuthService):
             user_id=user_id,
         )
         token = service.encoder.encode(user)
+        await service.cache.flush_cache()
         return service, token
     return _service_db_token_not_found
 

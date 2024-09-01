@@ -5,7 +5,11 @@ import pytest
 from pydantic import ValidationError
 
 from app.core.config.config import get_settings
-from app.core.config.models import KafkaSettings, PostgresSettings, Settings
+from app.core.config.settings_models import (
+    KafkaSettings,
+    PostgresSettings,
+    Settings,
+)
 from app.core.errors import ConfigError
 
 
