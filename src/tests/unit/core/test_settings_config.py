@@ -4,12 +4,8 @@ from enum import StrEnum
 import pytest
 from pydantic import ValidationError
 
-from app.core.config import (
-    KafkaSettings,
-    PostgresSettings,
-    Settings,
-    get_settings,
-)
+from app.core.config.config import get_settings
+from app.core.config.models import KafkaSettings, PostgresSettings, Settings
 from app.core.errors import ConfigError
 
 
@@ -27,6 +23,8 @@ class Key(StrEnum):
     pg_dns = 'pg_dns'
     pool_size = 'pool_size'
     max_overflow = 'max_overflow'
+    metrics = 'metrics'
+    tracing = 'tracing'
 
 
 kafka_valid_input = {
@@ -57,17 +55,38 @@ postgres_invalid_input = {
     Key.max_overflow: 20,
 }
 
+metrics_input = {
+    'enabled': False,
+    'service_prefix': 'kuzora_auth',
+}
+tracing_input = {
+    'enabled': True,
+    'sampler_type': 'const',
+    'sampler_param': 1,
+    'agent_host': 'jaeger',
+    'agent_port': 6831,
+    'service_name': 'auth-service',
+    'logging': True,
+    'validation': True,
+}
+
 valid_input = {
     Key.kafka: kafka_valid_input,
     Key.postgres: postgres_valid_input,
+    Key.metrics: metrics_input,
+    Key.tracing: tracing_input,
 }
 invalid_input_kafka = {
     Key.kafka: kafka_invalid_input,
     Key.postgres: postgres_valid_input,
+    Key.metrics: metrics_input,
+    Key.tracing: tracing_input,
 }
 invalid_input_postgres = {
     Key.kafka: kafka_valid_input,
     Key.postgres: postgres_invalid_input,
+    Key.metrics: metrics_input,
+    Key.tracing: tracing_input,
 }
 valid_config_path = 'src/config/config-local.yml'
 invalid_config_path = 'src/config/invalid_path.yml'

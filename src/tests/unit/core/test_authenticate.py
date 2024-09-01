@@ -121,7 +121,7 @@ class TestAuthenticate:
         )
         srv_encoder_mock.repository.get_user.return_value = user
         srv_encoder_mock.cache.get_cache.return_value = expected_token
-        srv_encoder_mock.repository.update_token.return_value = expected_token
+        srv_encoder_mock.repository.update_token.return_value = expected_token  # type: ignore # noqa: E501
 
         recieved_token = await srv_encoder_mock.authenticate(
             user_creds, encoded_token_value,
@@ -258,8 +258,8 @@ class TestAuthenticate:
         """Тестирует возврат ошибки при ошибке в репозитории."""
         encoded_token_value = test_encoded_token_value
         srv_encoder_mock.repository.get_user.side_effect = raise_repository_error  # noqa: E501 can't make shorter
-        srv_encoder_mock.repository.get_token.side_effect = raise_repository_error  # noqa: E501 can't make shorter
-        srv_encoder_mock.repository.create_token.side_effect = raise_repository_error  # noqa: E501 can't make shorter
+        srv_encoder_mock.repository.get_token.side_effect = raise_repository_error  # noqa: E501 can't make shorter  # type: ignore
+        srv_encoder_mock.repository.create_token.side_effect = raise_repository_error  # noqa: E501 can't make shorter # type: ignore
 
         with pytest.raises(RepositoryError):
             await srv_encoder_mock.authenticate(

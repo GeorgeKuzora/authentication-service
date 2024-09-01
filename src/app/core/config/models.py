@@ -1,6 +1,5 @@
 import logging
 import os
-from functools import lru_cache
 from pathlib import Path
 from typing import Self
 
@@ -93,31 +92,6 @@ class AuthConfig:
             raise ConfigError(detail='secret key was not provided')
 
 
-def get_auth_config() -> AuthConfig:
-    """
-    Возвращает конфигурацию сервиса аутетнификации.
-
-    Получает данные из файла конфигурации и возращает
-    объект конфигурации сервиса.
-
-    :return: данные конфигурации сервиса.
-    :rtype: Config
-    :raises ConfigError: в случае если конфигурация не найдена.
-    """
-    try:
-        access_data = AuthConfigAccessData()
-    except ConfigError as access_error:
-        logger.critical('auth config data access failed')
-        raise ConfigError(
-            detail='auth config data access failed',
-        ) from access_error
-    try:
-        return AuthConfig(access_data)
-    except ConfigError as config_error:
-        logger.critical('auth config setting failed')
-        raise ConfigError(detail='auth config setting failed') from config_error
-
-
 class KafkaSettings(BaseSettings):
     """Конфигурация kafka producer."""
 
@@ -150,11 +124,33 @@ class PostgresSettings(BaseSettings):
     max_overflow: int = 20
 
 
+class MetricsSettings(BaseSettings):
+    """Конфигурация метрик."""
+
+    enabled: bool
+    service_prefix: str = 'kuzora_auth'
+
+
+class TracingSettings(BaseSettings):
+    """Конфигурация трейсинга."""
+
+    enabled: bool = False
+    sampler_type: str = 'const'
+    sampler_param: int = 1
+    agent_host: str = 'jaeger'
+    agent_port: int = 6831
+    service_name: str = 'auth-service'
+    logging: bool = True
+    validation: bool = True
+
+
 class Settings(BaseSettings):
     """Конфигурация приложения."""
 
     kafka: KafkaSettings
     postgres: PostgresSettings
+    metrics: MetricsSettings
+    tracing: TracingSettings
 
     @classmethod
     def from_yaml(cls, config_path) -> Self:
@@ -173,11 +169,3 @@ class Settings(BaseSettings):
     def _is_valid_path(cls, path: str) -> bool:
         passlib_path = Path(path)
         return passlib_path.is_file()
-
-
-@lru_cache
-def get_settings() -> Settings:
-    """Создает конфигурацию сервиса."""
-    config_path_env_var = 'CONFIG_PATH'
-    config_file = os.getenv(config_path_env_var)
-    return Settings.from_yaml(config_file)

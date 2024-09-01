@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 from datetime import datetime
@@ -6,7 +7,7 @@ from pathlib import Path
 from aiokafka import AIOKafkaProducer
 from fastapi import UploadFile
 
-from app.core.config import get_settings
+from app.core.config.config import get_settings
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +77,14 @@ class KafkaProducer:  # noqa: WPS214 for now 8 methods, will extract in future
 
     async def start(self) -> None:
         """Запускает producer."""
-        await self.producer.start()
+        while True:
+            try:
+                await self.producer.start()
+            except Exception as exc:
+                logger.warning('Waiting for Kafka to start:', exc_info=exc)
+                await asyncio.sleep(10)
+            else:
+                break
 
     async def stop(self) -> None:
         """Останавливает producer."""

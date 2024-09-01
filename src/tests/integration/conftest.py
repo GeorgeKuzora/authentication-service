@@ -3,7 +3,7 @@ import pytest
 import pytest_asyncio
 
 from app.core.authentication import AuthService, User
-from app.core.config import get_auth_config
+from app.core.config.config import get_auth_config
 from app.external.in_memory_repository import InMemoryRepository
 from app.external.kafka import KafkaProducer
 from app.external.redis import TokenCache
