@@ -73,11 +73,7 @@ class TokenCache:
 
     def _get_token(self, cache_value: dict[str, Any]) -> Token:
         return Token(
-            subject=cache_value.get('subject', ''),
-            issued_at=datetime.fromisoformat(
-                cache_value.get(
-                    'issued_at', datetime.now(),
-                ),
-            ),
-            encoded_token=cache_value.get('encoded_token', ''),
+            subject=cache_value['subject'],
+            issued_at=datetime.fromisoformat(cache_value['issued_at']),
+            encoded_token=cache_value['encoded_token'],
         )
