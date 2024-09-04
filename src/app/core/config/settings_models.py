@@ -66,9 +66,10 @@ class TracingSettings(BaseSettings):
 class RedisSettings(BaseSettings):
     """Конфигурация redis."""
 
-    host: str = 'redis'
+    host: str
     port: int = 6379
     decode_responses: bool = True
+    db: int = 0
 
 
 class Settings(BaseSettings):

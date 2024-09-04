@@ -78,6 +78,7 @@ redis_input = {
     'host': 'redis',
     'port': 6379,
     'decode_responses': True,
+    'db': 0,
 }
 
 valid_input = {

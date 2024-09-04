@@ -21,6 +21,7 @@ class TokenCache:
             host=settings.redis.host,
             port=settings.redis.port,
             decode_responses=settings.redis.decode_responses,
+            db=settings.redis.db,
         )
 
     async def get_cache(self, cache_value: Token) -> Token:
