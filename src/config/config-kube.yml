@@ -22,7 +22,7 @@ tracing:
   logging: true
   validation: true
 redis:
-  host: "redis"
+  host: "redis-1"
   port: 6379
   decode_responses: True
   db: 0
