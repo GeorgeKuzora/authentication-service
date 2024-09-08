@@ -24,7 +24,12 @@ class Tag(StrEnum):
 
 
 def get_tracer() -> Tracer | None:
-    """Создает трейсер."""
+    """
+    Создает трейсер.
+
+    :return: Объект трейсера.
+    :rtype: Tracer
+    """
     settings = get_settings().tracing
     if not settings.enabled:
         return None
@@ -47,7 +52,14 @@ def get_tracer() -> Tracer | None:
 
 
 def is_business_route(path: str) -> bool:
-    """Проверяет относится ли путь к бизнес логике."""
+    """
+    Проверяет относится ли путь к бизнес логике.
+
+    :param path: Путь к URI.
+    :type path: str
+    :return: True путь бизнес логики, False в противном случае.
+    :rtype: bool
+    """
     not_business_routes = [
         '/healthz/up',
         '/healthz/ready',
@@ -57,7 +69,15 @@ def is_business_route(path: str) -> bool:
 
 
 async def tracing_middleware(request: Request, call_next):
-    """Создает спан для сервиса."""
+    """
+    Создает спан для сервиса.
+
+    :param request: Объект запроса.
+    :type request: Request
+    :param call_next: Функция вызываемая следом.
+    :return: Ответ сервиса
+    :rtype: Response
+    """
     path = request.url.path
     if not is_business_route(path):
         return await call_next(request)

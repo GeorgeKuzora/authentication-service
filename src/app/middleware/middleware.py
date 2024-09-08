@@ -22,7 +22,15 @@ def get_metrics_client_from_request(request: Request) -> MetricsClient:
 
 
 async def ready_metric_middleware(request: Request, call_next):
-    """Middleware для сбора метрики READY_COUNT."""
+    """
+    Middleware для сбора метрики READY_COUNT.
+
+    :param request: Объект запроса.
+    :type request: Request
+    :param call_next: Функция вызываемая следом.
+    :return: Ответ сервиса
+    :rtype: Response
+    """
     metrics_client = get_metrics_client_from_request(request)
     response = await call_next(request)
 
@@ -38,7 +46,15 @@ async def ready_metric_middleware(request: Request, call_next):
 
 
 async def duration_metric_middleware(request: Request, call_next):
-    """Middleware для сбора метрики REQUEST_DURATION."""
+    """
+    Middleware для сбора метрики REQUEST_DURATION.
+
+    :param request: Объект запроса.
+    :type request: Request
+    :param call_next: Функция вызываемая следом.
+    :return: Ответ сервиса
+    :rtype: Response
+    """
     metrics_client = get_metrics_client_from_request(request)
     start_time = time.time()
     response = await call_next(request)
@@ -54,7 +70,15 @@ async def duration_metric_middleware(request: Request, call_next):
 
 
 async def count_metric_middleware(request: Request, call_next):
-    """Middleware для сбора метрики REQUEST_COUNT."""
+    """
+    Middleware для сбора метрики REQUEST_COUNT.
+
+    :param request: Объект запроса.
+    :type request: Request
+    :param call_next: Функция вызываемая следом.
+    :return: Ответ сервиса
+    :rtype: Response
+    """
     metrics_client = get_metrics_client_from_request(request)
     response = await call_next(request)
 
@@ -68,7 +92,15 @@ async def count_metric_middleware(request: Request, call_next):
 
 
 async def auth_metric_middleware(request: Request, call_next):
-    """Middleware для сбора метрики AUTH_COUNT."""
+    """
+    Middleware для сбора метрики AUTH_COUNT.
+
+    :param request: Объект запроса.
+    :type request: Request
+    :param call_next: Функция вызываемая следом.
+    :return: Ответ сервиса
+    :rtype: Response
+    """
     metrics_client = get_metrics_client_from_request(request)
     response = await call_next(request)
     response_status_code = response.status_code

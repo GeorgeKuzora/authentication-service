@@ -18,7 +18,7 @@ class Label(StrEnum):
     status = 'status'
 
 
-class AuthStatus:
+class AuthStatus(StrEnum):
     """Имя статуса регистрации."""
 
     success = 'success'
@@ -32,26 +32,48 @@ class NoneClient:
     """Клиент заглушка сбора метрик."""
 
     def __init__(self, metrics_app=None) -> None:
-        """Метод инициализации."""
+        """
+        Метод инициализации.
+
+        :param metrics_app: Клиент метрик.
+        """
         self.app = metrics_app
 
     def inc_ready_count(self, **kwargs) -> None:
-        """Метод подсчета вызовов пробы healthz/ready."""
+        """
+        Метод подсчета вызовов пробы healthz/ready.
+
+        :param kwargs: Пары ключ-значение передаваемые в метрику.
+        """
         method_name = self.inc_ready_count.__name__
         logger.debug(method_name)
 
     def inc_request_count(self, **kwargs) -> None:
-        """Метод подсчета вызовов."""
+        """
+        Метод подсчета вызовов.
+
+        :param kwargs: Пары ключ-значение передаваемые в метрику.
+        """
         method_name = self.inc_request_count.__name__
         logger.debug(method_name)
 
     def observe_duration(self, *, process_time, **kwargs) -> None:
-        """Метод сбора метрик о продолжительности вызова."""
+        """
+        Метод сбора метрик о продолжительности вызова.
+
+        :param kwargs: Пары ключ-значение передаваемые в метрику.
+        :param process_time: Время обработки запроса.
+        """
         method_name = self.observe_duration.__name__
         logger.debug(method_name)
 
     def observe_auth(self, *, auth_status, **kwargs) -> None:
-        """Метод сбора метрик о попытках регистрации."""
+        """
+        Метод сбора метрик о попытках регистрации.
+
+        :param kwargs: Пары ключ-значение передаваемые в метрику.
+        :param auth_status: Статус аутентификации пользователя.
+        """
         method_name = self.observe_auth.__name__
         logger.debug(method_name)
 
@@ -60,7 +82,11 @@ class PrometheusClient:
     """Клиент сбора метрик prometheus."""
 
     def __init__(self, metrics_app) -> None:
-        """Метод инициализации."""
+        """
+        Метод инициализации.
+
+        :param metrics_app: Клиент метрик.
+        """
         self.app = metrics_app
         self.ready_count = Counter(
             name=f'{SERVICE_PREFIX}_ready_count',
@@ -98,19 +124,37 @@ class PrometheusClient:
         )
 
     def inc_ready_count(self, **kwargs) -> None:
-        """Метод подсчета вызовов пробы healthz/ready."""
+        """
+        Метод подсчета вызовов пробы healthz/ready.
+
+        :param kwargs: Пары ключ-значение передаваемые в метрику.
+        """
         self.ready_count.labels(**kwargs).inc()
 
     def inc_request_count(self, **kwargs) -> None:
-        """Метод подсчета вызовов."""
+        """
+        Метод подсчета вызовов.
+
+        :param kwargs: Пары ключ-значение передаваемые в метрику.
+        """
         self.request_count.labels(**kwargs).inc()
 
     def observe_duration(self, *, process_time, **kwargs) -> None:
-        """Метод сбора метрик о продолжительности вызова."""
+        """
+        Метод сбора метрик о продолжительности вызова.
+
+        :param kwargs: Пары ключ-значение передаваемые в метрику.
+        :param process_time: Время обработки запроса.
+        """
         self.request_duration.labels(**kwargs).observe(process_time)
 
     def observe_auth(self, *, auth_status, **kwargs) -> None:
-        """Метод сбора метрик о попытках регистрации."""
+        """
+        Метод сбора метрик о попытках регистрации.
+
+        :param kwargs: Пары ключ-значение передаваемые в метрику.
+        :param auth_status: Статус аутентификации пользователя.
+        """
         match auth_status:
             case AuthStatus.success:
                 self.auth_success_count.labels(**kwargs).inc()

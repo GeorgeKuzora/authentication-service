@@ -31,7 +31,21 @@ async def authenticate(
     authorization: Annotated[str, Header()],
     request: Request,
 ) -> Token:
-    """Хэндлер аутентификации пользователя."""
+    """
+    Хэндлер аутентификации пользователя.
+
+    Аутентифицирует пользователя в системе.
+
+    :param user_creds: Данные аутентификации пользователя.
+    :type user_creds: UserCredentials
+    :param authorization: Токен авторизации пользователя.
+    :type authorization: str
+    :param request: Объект запроса.
+    :type request: Request
+    :return: Токен авторизации пользователя.
+    :rtype: Token
+    :raises HTTPException: При ошибке в ходе аутентификации.
+    """
     with global_tracer().start_active_span('login') as scope:
         scope.span.set_tag(Tag.username, user_creds.username)
         service = request.app.service
@@ -64,7 +78,19 @@ async def authenticate(
 
 @router.post('/register')
 async def register(user_creds: UserCredentials, request: Request) -> Token:
-    """Хэндлер регистрации пользователя."""
+    """
+    Хэндлер регистрации пользователя.
+
+    Регистрирует пользователя в системе.
+
+    :param user_creds: Данные регистрации пользователя.
+    :type user_creds: UserCredentials
+    :param request: Объект запроса пользователя.
+    :type request: Request
+    :return: Токен авторизации.
+    :rtype: Token
+    :raises HTTPException: При ошибке в ходе авторизации.
+    """
     with global_tracer().start_active_span('register') as scope:
         scope.span.set_tag(Tag.username, user_creds.username)
         service = request.app.service
@@ -89,7 +115,19 @@ async def register(user_creds: UserCredentials, request: Request) -> Token:
 async def check_token(
     authorization: Annotated[str, Header()], request: Request,
 ) -> dict[str, str]:
-    """Хэндлер валидации токена пользователя."""
+    """
+    Хэндлер валидации токена пользователя.
+
+    Валидирует токен авторизации пользователя.
+
+    :param authorization: Токен авторизации пользователя.
+    :type authorization: str
+    :param request: Объект запроса пользователя.
+    :type request: Request
+    :return: Сообщение о успехе операции.
+    :rtype: dict[str, str]
+    :raises HTTPException: При ошибке в ходе операции.
+    """
     with global_tracer().start_active_span('register') as scope:
         scope.span.set_tag(Tag.token, authorization)
         service = request.app.service
@@ -123,7 +161,23 @@ async def verify(
     background_tasks: BackgroundTasks,
     request: Request,
 ) -> dict[str, str]:
-    """Верифицирует пользователя."""
+    """
+    Верифицирует пользователя.
+
+    Загружает фотографию пользователя и передает путь к файлу
+    через сообщение kafka.
+
+    :param username: Имя пользователя.
+    :type username: str
+    :param image: Загружаемый пользователем файл.
+    :type image: UploadFile
+    :param background_tasks: Задачи для запуска в бэкграунде.
+    :type background_tasks: BackgroundTasks
+    :param request: Объект запроса пользователя.
+    :type request: Request
+    :return: Сообщение о успехе операции
+    :rtype: dict[str, str]
+    """
     with global_tracer().start_active_span('verify') as scope:
         scope.span.set_tag(Tag.username, username)
         service = request.app.service

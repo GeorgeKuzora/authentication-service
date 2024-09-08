@@ -82,8 +82,16 @@ class Settings(BaseSettings):
     redis: RedisSettings
 
     @classmethod
-    def from_yaml(cls, config_path) -> Self:
-        """Создает объект класса из файла yaml."""
+    def from_yaml(cls, config_path: str) -> Self:
+        """
+        Создает объект класса из файла yaml.
+
+        :param config_path: Путь к файлу конфигурации.
+        :type config_path: str
+        :return: Объект с конфигурацией сервиса.
+        :rtype: Settings
+        :raises ConfigError: При ошибке конфигурации сервиса.
+        """
         if not cls._is_valid_path(config_path):
             logger.critical(
                 f'config file is missing on path {config_path}',

@@ -96,10 +96,10 @@ class Producer(Protocol):
 
     async def check_kafka(self) -> bool:
         """
-        Checks if Kafka is available.
+        Проверяет доступность kafka.
 
-        Checks if Kafka is available
-        by fetching all metadata from the Kafka client.
+        Проверяет что kafka доступна
+        путем запроса метаданных из клиента kafka.
         """
         ...
 

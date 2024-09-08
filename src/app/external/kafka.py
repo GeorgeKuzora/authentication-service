@@ -25,8 +25,18 @@ class KafkaProducer:  # noqa: WPS214 for now 8 methods, will extract in future
         self._init_storage_path()
 
     async def upload_image(self, username: str, image: UploadFile) -> None:
-        """Функция для отправки изображения в kafka."""
-        file_path = self._get_file_path(username)
+        """
+        Функция для отправки изображения в kafka.
+
+        Сохраняет изображение в файловую систему.
+        Передает путь к файлу в сообщение kafka.
+
+        :param username: Имя пользователя.
+        :type username: str
+        :param image: Изображение пользователя.
+        :type image: UploadFile
+        """
+        file_path = self._get_unique_file_path(username)
         message = {
             'username': username,
             'file_path': file_path,
@@ -48,12 +58,12 @@ class KafkaProducer:  # noqa: WPS214 for now 8 methods, will extract in future
 
     async def check_kafka(self) -> bool:
         """
-        Checks if Kafka is available.
+        Проверяет что kafka доступна.
 
-        Checks if Kafka is available
-        by fetching all metadata from the Kafka client.
+        Проверяет что kafka доступна,
+        путем запроса метаданных клиента kafka.
 
-        :return: True if Kafka is available, False otherwise.
+        :return: True если kafka доступна, False в противном случае.
         :rtype: bool
         """
         try:
@@ -97,7 +107,7 @@ class KafkaProducer:  # noqa: WPS214 for now 8 methods, will extract in future
         except FileExistsError:
             raise OSError(f'{path} is already exists and not a directory')
 
-    def _get_file_path(self, username) -> str:
+    def _get_unique_file_path(self, username) -> str:
         """Создает уникальный путь к файлу пользователя."""
         file_upload_timestamp = datetime.now().isoformat()
         filename = f'{username}-{file_upload_timestamp}'

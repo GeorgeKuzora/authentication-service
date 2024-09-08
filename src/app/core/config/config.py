@@ -36,7 +36,18 @@ def get_auth_config() -> AuthConfig:
 
 @lru_cache
 def get_settings() -> Settings:
-    """Создает конфигурацию сервиса."""
+    """
+    Создает конфигурацию сервиса.
+
+    :return: Объект с конфигурацией сервиса.
+    :rtype: Settings
+    :raises ConfigError: При ошибке в ходе конфигурации.
+    """
     config_path_env_var = 'CONFIG_PATH'
     config_file = os.getenv(config_path_env_var)
+    if config_file is None:
+        logger.critical(f'env variable {config_path_env_var} not found')
+        raise ConfigError(
+            detail=f'env variable {config_path_env_var} not found',
+        )
     return Settings.from_yaml(config_file)

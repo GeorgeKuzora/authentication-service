@@ -24,13 +24,7 @@ validation_rules = ValidationRules(
 
 
 class User(BaseModel):
-    """
-    Данные о пользователе.
-
-    Attributes:
-        username: str - имя пользователя
-        password_hash: str - хэш пароля пользователя
-    """
+    """Данные о пользователе."""
 
     username: str
     password_hash: str
@@ -56,14 +50,7 @@ class User(BaseModel):
 
 
 class Token(BaseModel):
-    """
-    Данные о токене.
-
-    Attributes:
-        subject: User - пользовать для которого создан токен
-        issued_at: datetime - дата и время создания токена
-        encoded_token: str - кодированное представление токена
-    """
+    """Данные о токене."""
 
     subject: str
     issued_at: datetime
@@ -90,11 +77,21 @@ class Token(BaseModel):
         return equal  # noqa: WPS331 MyPy suggestion
 
     def __str__(self) -> str:
-        """Метод получения представления объекта в виде строки."""
+        """
+        Метод получения представления объекта в виде строки.
+
+        :return: Представление объекта в виде строки.
+        :rtype: str
+        """
         return f'{self.subject}, {self.issued_at}'
 
     def is_expired(self) -> bool:
-        """Проверяет срок действия токена."""
+        """
+        Проверяет срок действия токена.
+
+        :return: Истек ли срок действия токена.
+        :rtype: bool
+        """
         timedelta_config = {'days': 0, 'hours': 1, 'minutes': 0}
         return datetime.now() > self.issued_at + timedelta(**timedelta_config)
 

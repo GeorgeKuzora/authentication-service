@@ -46,13 +46,7 @@ class AuthConfigAccessData:
 
 
 class AuthConfig:
-    """
-    Данные для доступа к конфигурации сервиса аутентификации.
-
-    Attributes:
-        algorithm_value: str - название алгоритма
-        secret_key_value: str - значение секретного ключа
-    """
+    """Данные для доступа к конфигурации сервиса аутентификации."""
 
     def __init__(self, access_data: AuthConfigAccessData) -> None:
         """
