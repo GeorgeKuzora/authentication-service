@@ -47,7 +47,7 @@ def get_tracer() -> Tracer | None:
 
 
 def is_business_route(path: str) -> bool:
-    """Проверяет относится ли путь к бизнесс логике."""
+    """Проверяет относится ли путь к бизнес логике."""
     not_business_routes = [
         '/healthz/up',
         '/healthz/ready',

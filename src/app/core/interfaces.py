@@ -5,11 +5,11 @@ class MetricsClient(Protocol):
     """Интерфейс клиента сбора метрик."""
 
     def inc_ready_count(self, **kwargs) -> None:
-        """Метод подчета вызовов пробы healthz/ready."""
+        """Метод подсчета вызовов пробы healthz/ready."""
         ...
 
     def inc_request_count(self, **kwargs) -> None:
-        """Метод подчета вызовов."""
+        """Метод подсчета вызовов."""
         ...
 
     def observe_duration(self, *, process_time, **kwargs) -> None:

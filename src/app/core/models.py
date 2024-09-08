@@ -17,7 +17,7 @@ ValidationRules = namedtuple(
 )
 
 validation_rules = ValidationRules(
-    username_max_len=50,  # noqa: WPS 432 to avoid magic nambers
+    username_max_len=50,  # noqa: WPS 432 to avoid magic numbers
     password_max_len=100,
     password_min_len=8,
 )

@@ -13,11 +13,11 @@ service_name = 'auth-service'
 
 
 def get_metrics_client_from_request(request: Request) -> MetricsClient:
-    """Получает клниент метрик из запроса."""
+    """Получает клиент метрик из запроса."""
     try:
         return request.state.metrics_client
     except Exception:
-        logger.error('expected MetricsCLient but recieved None')
+        logger.error('expected MetricsCLient but received None')
         return NoneClient()
 
 

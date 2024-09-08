@@ -106,7 +106,7 @@ class Producer(Protocol):
 
 @dataclass
 class Hash:
-    """Класс алгоритма хэширования."""
+    """Класс алгоритма хеширования."""
 
     _pwd_context: CryptContext = CryptContext(
         schemes=['bcrypt'], deprecated='auto',
@@ -114,9 +114,9 @@ class Hash:
 
     def get(self, string: str) -> str:
         """
-        Метод получения хэша.
+        Метод получения хеша.
 
-        :param string: строка для хэширования
+        :param string: строка для хеширования
         :type string: str
         :return: хэш переданного значения
         :rtype: str
@@ -125,7 +125,7 @@ class Hash:
 
     def validate(self, string: str, hashed_str: str) -> bool:
         """
-        Метод валидации хэша.
+        Метод валидации хеша.
 
         :param string: строка для валидации.
         :type string: str
@@ -174,7 +174,7 @@ class JWTEncoder:
         """
         Метод декодирования токена.
 
-        :param token: jwt токен в закодированом виде
+        :param token: jwt токен в закодированном виде
         :type token: str
         :return: токен пользователя
         :rtype: Token
@@ -195,14 +195,14 @@ class JWTEncoder:
         except Exception:
             logger.info("can't decode token")
             raise UnprocessableError(
-                detail='unproccessable token',
+                detail='unprocessable token',
             )
 
     def _decode(self, encoded_token: str) -> Token:
         """
         Метод декодирования токена.
 
-        :param encoded_token: jwt токен в закодированом виде
+        :param encoded_token: jwt токен в закодированном виде
         :type encoded_token: str
         :return: токен пользователя
         :rtype: Token
@@ -224,7 +224,7 @@ class AuthService:
     Сервис аутентификации пользователя.
 
     Сервис позволяет проводить регистрацию и аутентификацию
-    пользоватей. Создает JWT токен.
+    пользователей. Создает JWT токен.
     """
 
     def __init__(
@@ -362,7 +362,7 @@ class AuthService:
         """
         Верифицирует пользователя.
 
-        Отправляет сообщение с именим пользователя и изображением
+        Отправляет сообщение с именем пользователя и изображением
         пользователя в очередь сообщений.
 
         :param username: Имя пользователя

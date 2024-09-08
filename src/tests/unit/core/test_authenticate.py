@@ -50,11 +50,11 @@ class TestRegister:
             username=user_creds.username, password_hash=user_creds.password,
         )
 
-        recieved_token = await service.register(user_creds=user_creds)
+        received_token = await service.register(user_creds=user_creds)
 
-        assert isinstance(recieved_token, type(expected_token))
-        if recieved_token is not None:
-            assert recieved_token.subject == expected_token.subject
+        assert isinstance(received_token, type(expected_token))
+        if received_token is not None:
+            assert received_token.subject == expected_token.subject
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
@@ -123,13 +123,13 @@ class TestAuthenticate:
         srv_encoder_mock.cache.get_cache.return_value = expected_token
         srv_encoder_mock.repository.update_token.return_value = expected_token  # type: ignore # noqa: E501
 
-        recieved_token = await srv_encoder_mock.authenticate(
+        received_token = await srv_encoder_mock.authenticate(
             user_creds, encoded_token_value,
         )
 
-        assert isinstance(recieved_token, type(expected_token))
-        if recieved_token is not None:
-            assert recieved_token == expected_token
+        assert isinstance(received_token, type(expected_token))
+        if received_token is not None:
+            assert received_token == expected_token
         else:
             raise AssertionError()
 
@@ -211,7 +211,7 @@ class TestAuthenticate:
                     password=passwords[0],
                 ),
                 token_list[0],
-                id='not veirfied token is None',
+                id='not verified token is None',
             ),
         ),
     )

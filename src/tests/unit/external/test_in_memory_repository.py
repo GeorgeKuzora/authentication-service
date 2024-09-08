@@ -98,13 +98,13 @@ class TestGetUser:
         'user, repository_state_factory, expected_user', (
             pytest.param(
                 user_list[0],
-                'single_user_in_repo_facrory',
+                'single_user_in_repo_factory',
                 user_list[0],
                 id='first user in repo',
             ),
             pytest.param(
                 user_list[1],
-                'two_users_in_repo_facrory',
+                'two_users_in_repo_factory',
                 user_list[1],
                 id='second user in repo',
             ),
@@ -131,7 +131,7 @@ class TestGetUser:
         'invalid_user, repository_state_factory, expected', (
             pytest.param(
                 invalid_user,
-                'two_users_in_repo_facrory',
+                'two_users_in_repo_factory',
                 None,
                 id='second user in repo',
             ),
@@ -158,13 +158,13 @@ class TestGetToken:
         'user, repository_state_factory, expected_token', (
             pytest.param(
                 user_list[0],
-                'single_token_in_repo_facrory',
+                'single_token_in_repo_factory',
                 token_list[0],
                 id='first token in repo',
             ),
             pytest.param(
                 user_list[1],
-                'two_tokens_in_repo_facrory',
+                'two_tokens_in_repo_factory',
                 token_list[1],
                 id='second token in repo',
             ),
@@ -173,7 +173,7 @@ class TestGetToken:
     async def test_get_token(
         self, user: Token, repository_state_factory, expected_token, request,
     ):
-        """Тетстирует получение токена."""
+        """Тестирует получение токена."""
         repository, tokens_in_db = await request.getfixturevalue(
             repository_state_factory,
         )
@@ -190,7 +190,7 @@ class TestGetToken:
         'invalid_token, repository_state_factory, expected', (
             pytest.param(
                 invalid_user,
-                'two_tokens_in_repo_facrory',
+                'two_tokens_in_repo_factory',
                 None,
                 id='second token in repo',
             ),
@@ -218,14 +218,14 @@ class TestGetToken:
     'token, repository_state_factory, expected_token, expected_id', (
         pytest.param(
             token_list[0],
-            'single_token_in_repo_facrory',
+            'single_token_in_repo_factory',
             token_list[0],
             0,
             id='token found and updated',
         ),
         pytest.param(
             token_list[1],
-            'single_token_in_repo_facrory',
+            'single_token_in_repo_factory',
             token_list[1],
             1,
             id='token not found and created',
@@ -235,7 +235,7 @@ class TestGetToken:
 async def test_update_token(
     token, repository_state_factory, expected_token, expected_id, request,
 ):
-    """Тетстирует обновление токена."""
+    """Тестирует обновление токена."""
     repository, _ = await request.getfixturevalue(
         repository_state_factory,
     )

@@ -15,7 +15,7 @@ class AuthConfigAccessData:
 
     Attributes:
         algorithm_key: str - название переменной алгоритма.
-        secret_key_key : str - назывние переменной секретного ключа.
+        secret_key_key : str - название переменной секретного ключа.
         jwt_secrets_path : str - путь к файлу секретов.
     """
 
@@ -38,10 +38,10 @@ class AuthConfigAccessData:
             raise ConfigError(detail='config file path not found')
         elif not self._is_valid_path(self.jwt_secrets_path):
             logger.critical(
-                f'authconfig file {self.jwt_secrets_path} not found',
+                f'auth config file {self.jwt_secrets_path} not found',
             )
             raise ConfigError(
-                detail=f'authconfig file {self.jwt_secrets_path} not found',
+                detail=f'auth config file {self.jwt_secrets_path} not found',
             )
 
 

@@ -79,7 +79,7 @@ def repository():
 
 @pytest.mark.asyncio
 @pytest.fixture
-async def single_user_in_repo_facrory(repository):
+async def single_user_in_repo_factory(repository):
     """Фикстура репозитория с одной записью о пользователе."""
     users_in_repo = 1
     await repository.create_user(user_list[0])
@@ -88,7 +88,7 @@ async def single_user_in_repo_facrory(repository):
 
 @pytest.mark.asyncio
 @pytest.fixture
-async def two_users_in_repo_facrory(repository):
+async def two_users_in_repo_factory(repository):
     """Фикстура репозитория с двумя записями о пользователях."""
     users_in_repo = 2
     for user_id in range(users_in_repo):
@@ -98,7 +98,7 @@ async def two_users_in_repo_facrory(repository):
 
 @pytest.mark.asyncio
 @pytest.fixture
-async def single_token_in_repo_facrory(repository):
+async def single_token_in_repo_factory(repository):
     """Фикстура репозитория с одной записью о токене."""
     tokens_in_repo = 1
     await repository.create_token(token_list[0])
@@ -107,7 +107,7 @@ async def single_token_in_repo_facrory(repository):
 
 @pytest.mark.asyncio
 @pytest.fixture
-async def two_tokens_in_repo_facrory(repository):
+async def two_tokens_in_repo_factory(repository):
     """Фикстура репозитория с двумя записями о токенах."""
     tokens_in_repo = 2
     for token_id in range(tokens_in_repo):

@@ -36,12 +36,12 @@ class NoneClient:
         self.app = metrics_app
 
     def inc_ready_count(self, **kwargs) -> None:
-        """Метод подчета вызовов пробы healthz/ready."""
+        """Метод подсчета вызовов пробы healthz/ready."""
         method_name = self.inc_ready_count.__name__
         logger.debug(method_name)
 
     def inc_request_count(self, **kwargs) -> None:
-        """Метод подчета вызовов."""
+        """Метод подсчета вызовов."""
         method_name = self.inc_request_count.__name__
         logger.debug(method_name)
 
@@ -84,7 +84,7 @@ class PrometheusClient:
         )
         self.auth_success_count = Counter(
             name=f'{SERVICE_PREFIX}_auth_success_count',
-            documentation='Total number of successfull authentication requests',
+            documentation='Total number of successful authentication requests',
             labelnames=[
                 Label.method, Label.service, Label.endpoint, Label.status,
             ],
@@ -98,11 +98,11 @@ class PrometheusClient:
         )
 
     def inc_ready_count(self, **kwargs) -> None:
-        """Метод подчета вызовов пробы healthz/ready."""
+        """Метод подсчета вызовов пробы healthz/ready."""
         self.ready_count.labels(**kwargs).inc()
 
     def inc_request_count(self, **kwargs) -> None:
-        """Метод подчета вызовов."""
+        """Метод подсчета вызовов."""
         self.request_count.labels(**kwargs).inc()
 
     def observe_duration(self, *, process_time, **kwargs) -> None:

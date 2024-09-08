@@ -66,11 +66,11 @@ class KafkaProducer:  # noqa: WPS214 for now 8 methods, will extract in future
 
     def serializer(self, value: dict[str, str]) -> bytes:  # noqa: WPS110, E501 should be by docs
         """
-        Сериализирует сообщение перед отправкой в kafra.
+        Сериализирует сообщение перед отправкой в kafka.
 
         :param value: Строковое представление сообщения.
         :type value: dict[str, str]
-        :return: Сериализованное сообщение.
+        :return: Сериализированное сообщение.
         :rtype: bytes
         """
         return json.dumps(value).encode()

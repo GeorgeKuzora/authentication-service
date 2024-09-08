@@ -73,7 +73,7 @@ async def register(user_creds: UserCredentials, request: Request) -> Token:
             return await task
         except ValidationError as err:
             logger.error(f'Unprocessable entry {user_creds}')
-            scope.span.set_tag(Tag.error, "request can't be proccessed")
+            scope.span.set_tag(Tag.error, "request can't be processed")
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             ) from err
@@ -103,7 +103,7 @@ async def check_token(
                 status_code=status.HTTP_404_NOT_FOUND,
             ) from not_found_err
         except AuthorizationError as auth_err:
-            logger.info('authorisation error in /check_token')
+            logger.info('authorization error in /check_token')
             scope.span.set_tag(Tag.warning, 'invalid token')
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def create_pool() -> Engine:
-    """Создет sqlalchemy engine с пулом соединений."""
+    """Создает sqlalchemy engine с пулом соединений."""
     settings = get_settings()
     return create_engine(
         str(settings.postgres.pg_dns),
