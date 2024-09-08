@@ -48,12 +48,14 @@ class KafkaProducer:  # noqa: WPS214 for now 8 methods, will extract in future
                 logger.info(f'{file_path} saved successfully')
         except Exception as file_err:
             logger.error(f'{file_path} not saved, {file_err.args}')
+            return
         try:
             await self.producer.send_and_wait(
                 get_settings().kafka.topics, message,
             )
         except Exception as kafka_err:
             logger.error(f'{message} not sent, {kafka_err.args}')
+            return
         logger.info(f'{message} sent successfully')
 
     async def check_kafka(self) -> bool:
