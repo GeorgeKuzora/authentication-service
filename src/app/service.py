@@ -39,7 +39,7 @@ def get_service() -> AuthService:
 metrics_app = make_asgi_app()
 
 
-def get_metrics(app: FastAPI) -> MetricsClient:
+def get_metrics(app) -> MetricsClient:
     """
     Инициализирует клиент метрик.
 
