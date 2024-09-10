@@ -21,7 +21,12 @@ logger = logging.getLogger(__name__)
 
 
 def get_service() -> AuthService:
-    """Инициализирует сервис."""
+    """
+    Инициализирует сервис.
+
+    :return: Объект сервиса.
+    :rtype: AuthService
+    """
     cache = TokenCache()
     persistent = DBStorage()
     config = get_auth_config()
@@ -35,7 +40,14 @@ metrics_app = make_asgi_app()
 
 
 def get_metrics(app) -> MetricsClient:
-    """Инициализирует клиент метрик."""
+    """
+    Инициализирует клиент метрик.
+
+    :param app: Объект приложения.
+    :type app: FastAPI
+    :return: Объект клиента метрик.
+    :rtype: MetricsClient
+    """
     settings = get_settings()
     if settings.metrics.enabled is True:
         return PrometheusClient(app)
@@ -44,7 +56,14 @@ def get_metrics(app) -> MetricsClient:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Метод для определения lifespan events приложения."""
+    """
+    Метод для определения lifespan events приложения.
+
+    :param app: Объект приложения.
+    :type app: FastAPI
+    :yield: Состояние запроса.
+    :ytype: TypedDict
+    """
     service = get_service()
     app.service = service  # type: ignore # app has **extras specially for it
     metrics_client = get_metrics(metrics_app)

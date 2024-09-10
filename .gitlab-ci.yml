@@ -128,6 +128,12 @@ pytest-test-job:
         POSTGRES_PASSWORD: mysecretpassword
         POSTGRES_USER: myuser
         POSTGRES_DB: mydatabase
+    - name: redis:7.4.0
+      alias: redis,cache
+      variables:
+        REDIS_PASSWORD: my-password
+        REDIS_PORT: 6379
+        REDIS_DATABASES: 16
   script:
     - "poetry run alembic upgrade head"
     - "poetry run pytest --disable-warnings src"

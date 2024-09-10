@@ -1,3 +1,4 @@
+import logging
 from collections import namedtuple
 from datetime import datetime
 
@@ -6,6 +7,8 @@ import pytest
 from app.core.authentication import AuthService, Token, User
 from app.core.errors import AuthorizationError, NotFoundError
 from app.core.models import UserCredentials
+
+logger = logging.getLogger(__name__)
 
 TestUser = namedtuple('TestUser', 'username, password')
 
@@ -195,7 +198,9 @@ class TestCheckToken:
         )
         auth_header = f'Bearer {token.encoded_token}'
 
-        assert await srv.check_token(auth_header)
+        response = await srv.check_token(auth_header)
+        logger.debug(response)
+        assert response
 
     @pytest.mark.parametrize(
         'token, is_expired', (

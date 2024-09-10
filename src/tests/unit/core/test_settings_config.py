@@ -5,7 +5,11 @@ import pytest
 from pydantic import ValidationError
 
 from app.core.config.config import get_settings
-from app.core.config.models import KafkaSettings, PostgresSettings, Settings
+from app.core.config.settings_models import (
+    KafkaSettings,
+    PostgresSettings,
+    Settings,
+)
 from app.core.errors import ConfigError
 
 
@@ -25,6 +29,7 @@ class Key(StrEnum):
     max_overflow = 'max_overflow'
     metrics = 'metrics'
     tracing = 'tracing'
+    redis = 'redis'
 
 
 kafka_valid_input = {
@@ -69,24 +74,33 @@ tracing_input = {
     'logging': True,
     'validation': True,
 }
+redis_input = {
+    'host': 'redis',
+    'port': 6379,
+    'decode_responses': True,
+    'db': 0,
+}
 
 valid_input = {
     Key.kafka: kafka_valid_input,
     Key.postgres: postgres_valid_input,
     Key.metrics: metrics_input,
     Key.tracing: tracing_input,
+    Key.redis: redis_input,
 }
 invalid_input_kafka = {
     Key.kafka: kafka_invalid_input,
     Key.postgres: postgres_valid_input,
     Key.metrics: metrics_input,
     Key.tracing: tracing_input,
+    Key.redis: redis_input,
 }
 invalid_input_postgres = {
     Key.kafka: kafka_valid_input,
     Key.postgres: postgres_invalid_input,
     Key.metrics: metrics_input,
     Key.tracing: tracing_input,
+    Key.redis: redis_input,
 }
 valid_config_path = 'src/config/config-local.yml'
 invalid_config_path = 'src/config/invalid_path.yml'

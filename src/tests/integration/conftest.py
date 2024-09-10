@@ -43,7 +43,7 @@ def service_db_user_yes_token_no(service: AuthService):
     """
     Возвращает функцию для создания сервиса.
 
-    Возвращаемая функция примает username и password
+    Возвращаемая функция принимает username и password
     и создает запись о пользователе в базе данных.
 
     :param service: экземпляр сервиса
@@ -68,7 +68,7 @@ def service_db_user_yes_token_yes(service: AuthService):
     """
     Возвращает функцию для создания сервиса.
 
-    Возвращаемая функция примает username и password,
+    Возвращаемая функция принимает username и password,
     создает запись о пользователе в базе данных
     и добавляет токен для пользователя в базу данных.
 
@@ -86,6 +86,7 @@ def service_db_user_yes_token_yes(service: AuthService):
         )
         user = await service.repository.create_user(user)
         token = service.encoder.encode(user)
+        await service.cache.flush_cache()
         await service.cache.create_cache(token)
         return service
     return _service_db_user_yes_token_yes
@@ -96,8 +97,8 @@ def service_db_user_not_in_db(service: AuthService):
     """
     Возвращает функцию для создания сервиса.
 
-    Возвращаемая функция примает username и password.
-    Возвращаемая функция создвет сервис без записей в базе данных.
+    Возвращаемая функция принимает username и password.
+    Возвращаемая функция создает сервис без записей в базе данных.
 
     :param service: экземпляр сервиса
     :type service: AuthService
@@ -114,7 +115,7 @@ def service_db_user_with_invalid_pass(service: AuthService):
     """
     Возвращает функцию для создания сервиса.
 
-    Возвращаемая функция примает username и password,
+    Возвращаемая функция принимает username и password,
     создает запись о пользователе в базе данных.
     При этом созданный пользователь имеет хэш пароля
     не соответствующий переданному паролю.
@@ -142,7 +143,7 @@ def service_db_token_not_found(service: AuthService):
     """
     Возвращает функцию для создания сервиса.
 
-    Возвращаемая функция примает username и password,
+    Возвращаемая функция принимает username и password,
     создает запись о пользователе в базе данных
     и добавляет токен для пользователя в базу данных.
 
@@ -159,6 +160,7 @@ def service_db_token_not_found(service: AuthService):
             user_id=user_id,
         )
         token = service.encoder.encode(user)
+        await service.cache.flush_cache()
         return service, token
     return _service_db_token_not_found
 
@@ -168,7 +170,7 @@ def service_db_token_found(service: AuthService):
     """
     Возвращает функцию для создания сервиса.
 
-    Возвращаемая функция примает username и password,
+    Возвращаемая функция принимает username и password,
     создает запись о пользователе в базе данных
     и добавляет токен для пользователя в базу данных.
 
@@ -193,7 +195,7 @@ def service_db_token_found(service: AuthService):
 @pytest.fixture
 def service_mocker(monkeypatch):
     """
-    Мокирует app.api.handlers.service, возращает функцию мокирования.
+    Мокирует app.api.handlers.service, возвращает функцию мокирования.
 
     Функция мокирования принимает объект сервиса и подменяет им
     объект сервиса в модуле хэндлеров.

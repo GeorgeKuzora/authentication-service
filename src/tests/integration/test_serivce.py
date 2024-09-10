@@ -15,7 +15,7 @@ async def test_get_serivce():
 
 @pytest.mark.asyncio
 async def test_get_metrics():
-    """Тестирует фунцию get_metrics."""
+    """Тестирует функцию get_metrics."""
     metrics = get_metrics(app=None)
 
     assert isinstance(metrics, (NoneClient, PrometheusClient))
